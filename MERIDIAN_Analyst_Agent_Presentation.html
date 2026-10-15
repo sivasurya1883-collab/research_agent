@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MERIDIAN Analyst Agent — Business Presentation</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b1120;--surface:#111827;--card:#182033;--card2:#1e2a3f;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --cyan:#38bdf8;--cyan2:#7dd3fc;--magenta:#c084fc;--gold:#fbbf24;
+  --green:#34d399;--red:#f87171;--orange:#fb923c;
+  --white:#f1f5f9;--muted:#64748b;--text:#94a3b8;
+}
+html,body{height:100%;width:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;font-size:14px}
+
+/* ── DECK & SLIDES ── */
+.deck{position:relative;width:100vw;height:100vh}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .45s ease,transform .45s ease;transform:translateX(50px)}
+.slide.active{opacity:1;pointer-events:all;transform:translateX(0)}
+.slide.exit{opacity:0;transform:translateX(-50px)}
+
+/* ── AMBIENT GLOWS ── */
+.g1,.g2{position:absolute;border-radius:50%;filter:blur(110px);pointer-events:none;opacity:.12}
+.g1{width:480px;height:480px;top:-120px;left:-80px;background:var(--cyan)}
+.g2{width:360px;height:360px;bottom:-80px;right:-60px;background:var(--magenta)}
+
+/* ── TOP BAR ── */
+.topbar{height:3px;flex-shrink:0;background:linear-gradient(90deg,var(--cyan),var(--magenta),var(--gold))}
+
+/* ── SLIDE BODY ── */
+.body{flex:1;padding:28px 52px 80px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+
+/* ── TYPOGRAPHY ── */
+.tag{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);margin-bottom:5px}
+h1{font-size:clamp(40px,5.5vw,72px);font-weight:900;line-height:1.05;color:var(--white)}
+h2{font-size:clamp(20px,2.6vw,32px);font-weight:800;color:var(--white);margin-bottom:4px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.hl{color:var(--cyan)} .hg{color:var(--gold)} .hm{color:var(--magenta)} .hr{color:var(--red)} .ho{color:var(--orange)} .hgr{color:var(--green)}
+
+/* ── CARD BASE ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+.card2{background:var(--card2);border:1px solid var(--border2);border-radius:14px;padding:16px 18px}
+
+/* ── PILL ── */
+.pill{display:inline-block;padding:3px 11px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:.06em;border:1px solid currentColor}
+.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700}
+.badge-g{background:rgba(52,211,153,.13);color:var(--green)}
+.badge-r{background:rgba(248,113,113,.13);color:var(--red)}
+.badge-y{background:rgba(251,191,36,.13);color:var(--gold)}
+.badge-c{background:rgba(56,189,248,.13);color:var(--cyan)}
+
+/* ══════════════════════════════════════
+   SLIDE 1 — COVER
+══════════════════════════════════════ */
+#s1 .body{justify-content:center}
+#s1 h1{background:linear-gradient(135deg,var(--cyan) 0%,var(--cyan2) 40%,var(--magenta) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#s1 .tagline{font-size:clamp(14px,1.6vw,18px);color:var(--text);margin:12px 0 28px;max-width:580px;line-height:1.7}
+.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+.mandate-box{
+  display:inline-block;max-width:600px;padding:14px 20px;
+  border-left:3px solid var(--gold);
+  background:rgba(251,191,36,.06);border-radius:0 10px 10px 0;
+  font-size:13px;color:var(--text);line-height:1.7;font-style:italic
+}
+.right-art{position:absolute;right:44px;top:50%;transform:translateY(-50%)}
+.ring-wrap{position:relative;width:240px;height:240px}
+.ring-wrap svg{width:100%;height:100%;animation:spin 14s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.4}
+.ring-center .big{font-size:32px;font-weight:900;color:var(--cyan)}
+.ring-center .sm{font-size:11px;color:var(--muted);font-weight:600}
+.score-ring{position:absolute;inset:0;width:100%;height:100%;animation:none}
+
+/* ══════════════════════════════════════
+   SLIDE 2 — THE BUSINESS PROBLEM
+══════════════════════════════════════ */
+.prob-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px;flex:1}
+.prob-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:9px;position:relative;overflow:hidden;transition:transform .3s}
+.prob-card:hover{transform:translateY(-3px)}
+.prob-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.pb1::before{background:var(--red)} .pb2::before{background:var(--orange)}
+.pb3::before{background:var(--magenta)} .pb4::before{background:var(--cyan)}
+.prob-card .ico{font-size:26px}
+.prob-card h3{font-size:14px;font-weight:700;color:var(--white)}
+.prob-card p{font-size:12px;color:var(--muted);line-height:1.6}
+.prob-card .stat{align-self:flex-start;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700}
+
+/* ══════════════════════════════════════
+   SLIDE 3 — MANDATE & UNIVERSE
+══════════════════════════════════════ */
+.mandate-wrap{display:flex;gap:16px;flex:1}
+.mandate-left{flex:1.1;display:flex;flex-direction:column;gap:10px}
+.mandate-right{flex:.9;display:flex;flex-direction:column;gap:10px}
+.rule-row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;transition:border-color .3s}
+.rule-row:hover{border-color:var(--cyan)}
+.rule-icon{font-size:20px;width:32px;text-align:center;flex-shrink:0}
+.rule-label{font-size:13px;font-weight:600;color:var(--white);flex:1}
+.rule-val{font-size:13px;font-weight:700}
+.rule-badge{padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700}
+.pass{background:rgba(52,211,153,.12);color:var(--green)}
+.fail{background:rgba(248,113,113,.12);color:var(--red)}
+.comp-table{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;flex:1}
+.comp-table table{width:100%;border-collapse:collapse}
+.comp-table th{background:rgba(56,189,248,.07);color:var(--cyan);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.comp-table td{padding:9px 12px;font-size:12px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.04)}
+.comp-table tr:last-child td{border-bottom:none}
+.comp-table tr:hover td{background:rgba(255,255,255,.02)}
+.verdict-chip{display:inline-block;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700}
+.vc-sb{background:rgba(52,211,153,.13);color:var(--green)}
+.vc-h{background:rgba(251,191,36,.13);color:var(--gold)}
+.vc-p{background:rgba(248,113,113,.13);color:var(--red)}
+
+/* ══════════════════════════════════════
+   SLIDE 4 — AGENT PIPELINE
+══════════════════════════════════════ */
+.pipe-wrap{display:flex;flex-direction:column;flex:1;gap:16px}
+.pipe-row{display:flex;align-items:center;justify-content:center;gap:0;padding:0 4px}
+.node{display:flex;flex-direction:column;align-items:center;gap:7px;background:var(--card);border:2px solid var(--border);border-radius:14px;padding:14px 10px;width:138px;flex-shrink:0;cursor:pointer;transition:border-color .3s,transform .3s,box-shadow .3s;position:relative}
+.node:hover,.node.on{border-color:var(--cyan);transform:translateY(-5px);box-shadow:0 10px 32px rgba(56,189,248,.18)}
+.node .nn{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:rgba(56,189,248,.12);color:var(--cyan);flex-shrink:0}
+.node .nl{font-size:12px;font-weight:700;color:var(--white);text-align:center;line-height:1.3}
+.node .ns{font-size:10px;color:var(--muted);text-align:center;line-height:1.4}
+.node.out .nn{background:rgba(52,211,153,.12);color:var(--green)}
+.node.out:hover,.node.out.on{border-color:var(--green);box-shadow:0 10px 32px rgba(52,211,153,.18)}
+.node.inp .nn{background:rgba(251,191,36,.12);color:var(--gold)}
+.node.inp:hover,.node.inp.on{border-color:var(--gold);box-shadow:0 10px 32px rgba(251,191,36,.18)}
+.arr{width:28px;height:2px;background:linear-gradient(90deg,var(--cyan),rgba(56,189,248,.1));position:relative;flex-shrink:0}
+.arr::after{content:'';position:absolute;right:-1px;top:-4px;border:4px solid transparent;border-left-color:var(--cyan)}
+.arr::before{content:'';position:absolute;height:100%;width:12px;background:var(--cyan);left:0;top:0;animation:bm 1.8s ease-in-out infinite;border-radius:2px;opacity:.8}
+@keyframes bm{0%,100%{left:0;opacity:.8}50%{left:14px;opacity:0}}
+.det{background:var(--card2);border:1px solid var(--border2);border-radius:14px;padding:16px 20px;display:none;animation:fu .3s ease}
+.det.show{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.det h4{font-size:13px;font-weight:700;color:var(--cyan);margin-bottom:8px}
+.det ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.det ul li{font-size:11px;color:var(--muted);padding-left:14px;position:relative;line-height:1.5}
+.det ul li::before{content:'▸';position:absolute;left:0;color:var(--cyan)}
+.api-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 7px;border-radius:5px;background:rgba(56,189,248,.09);color:var(--cyan);margin:2px 2px 0 0}
+.hint-txt{font-size:11px;color:var(--muted);text-align:center;opacity:.7}
+
+/* ══════════════════════════════════════
+   SLIDE 5 — TECH ARCHITECTURE
+══════════════════════════════════════ */
+.arch-wrap{flex:1;display:flex;gap:16px}
+.arch-list{flex:1.05;display:flex;flex-direction:column;gap:7px;justify-content:center}
+.al-row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 16px;cursor:pointer;transition:border-color .25s,transform .25s}
+.al-row:hover,.al-row.sel{border-color:var(--cyan);transform:translateX(5px)}
+.al-row .li{font-size:18px;width:28px;text-align:center;flex-shrink:0}
+.al-row .ln{font-size:13px;font-weight:700;color:var(--white);min-width:130px}
+.al-row .lt{font-size:11px;color:var(--muted)}
+.al-row .lb{margin-left:auto;padding:2px 9px;border-radius:100px;font-size:10px;font-weight:700;background:rgba(56,189,248,.1);color:var(--cyan)}
+.arch-det{flex:.95;background:var(--card2);border:1px solid var(--border2);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.arch-det h3{font-size:15px;font-weight:700;color:var(--white)}
+.arch-det p{font-size:12px;color:var(--muted);line-height:1.7}
+.code-block{background:var(--bg);border-radius:10px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--cyan);line-height:1.9;border:1px solid var(--border);overflow-x:auto}
+.code-block .k{color:var(--magenta)} .code-block .s{color:var(--gold)} .code-block .c{color:var(--muted)}
+
+/* ══════════════════════════════════════
+   SLIDE 6 — CASE STUDY / LIVE OUTPUT
+══════════════════════════════════════ */
+.case-wrap{display:flex;gap:16px;flex:1}
+.case-left{flex:1.1;display:flex;flex-direction:column;gap:10px}
+.case-right{flex:.9;display:flex;flex-direction:column;gap:10px}
+.input-mock{background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:16px 18px}
+.input-mock .label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.input-mock .val{font-size:13px;color:var(--white);line-height:1.6;font-style:italic}
+.score-box{background:linear-gradient(135deg,rgba(56,189,248,.1),rgba(192,132,252,.08));border:1px solid rgba(56,189,248,.25);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:18px}
+.score-circle{width:72px;height:72px;border-radius:50%;border:3px solid var(--cyan);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+.score-circle .sv{font-size:20px;font-weight:900;color:var(--cyan);line-height:1}
+.score-circle .sl{font-size:9px;color:var(--muted);font-weight:600}
+.score-info h4{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px}
+.score-info p{font-size:12px;color:var(--muted);line-height:1.5}
+.rules-grid{display:flex;flex-direction:column;gap:6px}
+.rule-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card);border-radius:10px}
+.ri-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ri-dot.pass{background:var(--green)} .ri-dot.fail{background:var(--red)}
+.ri-label{font-size:12px;color:var(--text);flex:1}
+.ri-val{font-size:12px;font-weight:700}
+.memo-preview{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;flex:1;overflow:hidden}
+.memo-preview h4{font-size:12px;font-weight:700;color:var(--cyan);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.memo-line{font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:4px}
+.memo-line strong{color:var(--white)}
+.bull-bear{display:flex;gap:10px}
+.bull,.bear{flex:1;border-radius:12px;padding:12px 14px}
+.bull{background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2)}
+.bear{background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.2)}
+.bull h5{font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px}
+.bear h5{font-size:12px;font-weight:700;color:var(--red);margin-bottom:6px}
+.bull li,.bear li{font-size:11px;color:var(--muted);list-style:none;padding-left:12px;position:relative;margin-bottom:4px;line-height:1.5}
+.bull li::before{content:'↑';position:absolute;left:0;color:var(--green);font-weight:700}
+.bear li::before{content:'↓';position:absolute;left:0;color:var(--red);font-weight:700}
+
+/* ══════════════════════════════════════
+   SLIDE 7 — ROI & NEXT STEPS
+══════════════════════════════════════ */
+.roi-wrap{display:flex;gap:16px;flex:1}
+.roi-left{flex:1.1;display:flex;flex-direction:column;gap:14px}
+.roi-right{flex:.9;display:flex;flex-direction:column;gap:12px}
+.metric-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mc{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;position:relative;overflow:hidden;transition:transform .3s}
+.mc:hover{transform:translateY(-3px)}
+.mc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.mc1::after{background:var(--cyan)} .mc2::after{background:var(--magenta)} .mc3::after{background:var(--gold)} .mc4::after{background:var(--green)}
+.mc .mv{font-size:34px;font-weight:900;line-height:1}
+.mc .ml{font-size:11px;color:var(--muted);margin-top:5px}
+.mc .ms{font-size:10px;margin-top:3px;font-weight:600}
+.roadmap{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;flex:1}
+.roadmap h4{font-size:12px;font-weight:700;color:var(--gold);margin-bottom:12px;letter-spacing:.08em;text-transform:uppercase}
+.rm-row{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.rm-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.rm-done{background:var(--green)} .rm-todo{background:var(--muted)} .rm-future{background:rgba(192,132,252,.5)}
+.rm-row .rmc strong{font-size:12px;color:var(--white);display:block;margin-bottom:2px}
+.rm-row .rmc p{font-size:11px;color:var(--muted);line-height:1.5}
+.cta-box{background:linear-gradient(135deg,rgba(56,189,248,.1),rgba(192,132,252,.1));border:1px solid rgba(56,189,248,.3);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.cta-box h3{font-size:15px;font-weight:700;color:var(--white)}
+.cta-box p{font-size:12px;color:var(--muted);line-height:1.6}
+.cta-steps{display:flex;flex-direction:column;gap:7px}
+.cs{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-size:12px;transition:border-color .25s}
+.cs:hover{border-color:var(--cyan)}
+.cs .csn{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:linear-gradient(135deg,var(--cyan),var(--magenta));color:var(--bg);flex-shrink:0}
+.cs strong{color:var(--white)} .cs span{margin-left:auto;color:var(--muted);font-size:10px;font-family:'JetBrains Mono',monospace}
+
+/* ── NAV ── */
+.nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;z-index:100;background:rgba(17,24,39,.93);border:1px solid var(--border);padding:9px 18px;border-radius:100px;backdrop-filter:blur(14px)}
+.nav button{background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;padding:3px 8px;border-radius:6px;transition:color .2s,background .2s}
+.nav button:hover{color:var(--white);background:rgba(56,189,248,.12)}
+.dots{display:flex;gap:5px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--muted);cursor:pointer;transition:background .25s,transform .25s}
+.dot.on{background:var(--cyan);transform:scale(1.45)}
+#ctr{color:var(--muted);font-size:11px;min-width:32px;text-align:center}
+.kh{position:fixed;top:18px;right:22px;font-size:10px;color:var(--muted);display:flex;gap:5px;align-items:center}
+.kh kbd{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:9px;color:var(--text)}
+</style>
+</head>
+<body>
+<div class="kh"><kbd>←</kbd><kbd>→</kbd>&nbsp;navigate</div>
+<div class="deck" id="deck">
+
+<!-- ═══════ SLIDE 1 – COVER ═══════ -->
+<div class="slide active" id="s1">
+  <div class="topbar"></div>
+  <div class="g1"></div><div class="g2"></div>
+  <div class="body" style="justify-content:center">
+    <div class="tag">TCS GenAI Lab &nbsp;·&nbsp; 2026</div>
+    <h1>MERIDIAN</h1>
+    <p style="font-size:clamp(16px,1.8vw,22px);font-weight:700;color:var(--white);margin-top:2px;">GraphRAG Agentic Research System</p>
+    <p class="tagline">An institutional-grade, 5-agent AI platform that validates equity investment theses against<br>
+    <strong style="color:var(--white)">audited SEC filings, earnings call sentiment, peer valuation comps</strong> and a proprietary<br>
+    <strong style="color:var(--gold)">GARP &amp; Free Cash Flow mandate</strong> — delivering research memos in minutes, not days.</p>
+    <div class="pill-row">
+      <span class="pill" style="color:var(--cyan);border-color:rgba(56,189,248,.3)">gemini-2.5-pro</span>
+      <span class="pill" style="color:var(--magenta);border-color:rgba(192,132,252,.3)">LangGraph Orchestration</span>
+      <span class="pill" style="color:var(--gold);border-color:rgba(251,191,36,.3)">FastAPI + Next.js</span>
+      <span class="pill" style="color:var(--green);border-color:rgba(52,211,153,.3)">NetworkX Knowledge Graph</span>
+      <span class="pill" style="color:var(--muted);border-color:var(--border)">SEC EDGAR &nbsp;·&nbsp; DuckDB &nbsp;·&nbsp; SQLite</span>
+    </div>
+    <div class="mandate-box">
+      <strong style="color:var(--gold);font-style:normal">Meridian GARP Mandate:</strong><br>
+      "Growth at a Reasonable Price with strict <strong style="color:var(--white)">FCF Yield ≥ 4.0%</strong>, defensive balance sheets
+      <strong style="color:var(--white)">(Debt/EBITDA &lt; 2.5×)</strong>, and secular tailwinds in middle-market Property &amp; Casualty
+      insurance brokerage and risk advisory."
+    </div>
+    <div class="right-art">
+      <div class="ring-wrap">
+        <svg viewBox="0 0 200 200">
+          <defs>
+            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#c084fc"/>
+            </linearGradient>
+          </defs>
+          <circle cx="100" cy="100" r="86" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="14"/>
+          <circle cx="100" cy="100" r="86" fill="none" stroke="url(#rg)" stroke-width="3" stroke-dasharray="300 240" stroke-linecap="round"/>
+          <circle cx="100" cy="14"  r="7" fill="#38bdf8"/>
+          <circle cx="186" cy="100" r="7" fill="#c084fc"/>
+          <circle cx="100" cy="186" r="7" fill="#fbbf24"/>
+          <circle cx="14"  cy="100" r="7" fill="#34d399"/>
+          <circle cx="100" cy="100" r="7" fill="rgba(56,189,248,.3)" stroke="#38bdf8" stroke-width="1.5"/>
+          <text x="100" y="8"   text-anchor="middle" font-size="8.5" fill="#64748b" font-family="Inter">SEC Agent</text>
+          <text x="199" y="103" text-anchor="end"    font-size="8.5" fill="#64748b" font-family="Inter">Transcript</text>
+          <text x="100" y="199" text-anchor="middle" font-size="8.5" fill="#64748b" font-family="Inter">Peer Comps</text>
+          <text x="0"   y="103" text-anchor="start"  font-size="8.5" fill="#64748b" font-family="Inter">KG Engine</text>
+        </svg>
+        <div class="ring-center"><div class="big">5</div><div class="sm">AI Agents<br>LangGraph</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 2 – THE PROBLEM ═══════ -->
+<div class="slide" id="s2">
+  <div class="topbar"></div>
+  <div class="g1" style="background:var(--red)"></div>
+  <div class="body">
+    <div class="tag">The Business Problem</div>
+    <h2>Why Equity Research is Broken Today</h2>
+    <p class="sub">Insurance brokerage analysts face systemic inefficiencies that erode alpha and increase institutional risk</p>
+    <div class="prob-grid">
+      <div class="prob-card pb1">
+        <div class="ico">⏳</div>
+        <h3>Research Cycles Take 3–5 Days</h3>
+        <p>Senior analysts spend days manually pulling SEC filings, earnings transcripts, and peer multiples before writing a single page of memo. By the time it's ready, the market has already priced in the move.</p>
+        <span class="stat badge badge-r">Time-to-memo: 3–5 business days</span>
+      </div>
+      <div class="prob-card pb2">
+        <div class="ico">🗂️</div>
+        <h3>Fragmented, Siloed Data Sources</h3>
+        <p>Critical signals live across SEC EDGAR XBRL filings, FMP earnings transcripts, broker peer multiple databases, and unstructured web sources — with no unified, mandate-aware synthesis layer.</p>
+        <span class="stat badge badge-y">6+ disconnected data sources</span>
+      </div>
+      <div class="prob-card pb3">
+        <div class="ico">📉</div>
+        <h3>Mandate Compliance is Manual &amp; Error-Prone</h3>
+        <p>Checking every target against FCF Yield ≥ 4.0% and Debt/EBITDA &lt; 2.5× hurdles requires analyst judgment that varies across team members, creating inconsistent investment recommendations.</p>
+        <span class="stat badge" style="background:rgba(192,132,252,.12);color:var(--magenta)">Mandate breaches missed: ~30%</span>
+      </div>
+      <div class="prob-card pb4">
+        <div class="ico">🏢</div>
+        <h3>No Structured Competitor Intelligence</h3>
+        <p>Tracking 8+ middle-market P&amp;C brokerage competitors (Acrisure, Alliant, Lockton, USI, TIH…) with real-time financial fact updates, leverage deltas, and PE ownership changes is operationally impossible manually.</p>
+        <span class="stat badge badge-c">8 competitors, 200+ data points each</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 3 – GARP MANDATE & COMPETITOR UNIVERSE ═══════ -->
+<div class="slide" id="s3">
+  <div class="topbar"></div>
+  <div class="body">
+    <div class="tag">Investment Mandate &amp; Competitor Universe</div>
+    <h2>GARP Strategy Rules &amp; Live Competitor Scoring</h2>
+    <p class="sub">MERIDIAN enforces quantitative hurdles automatically and rates all 8 preset competitors in real time</p>
+    <div class="mandate-wrap">
+      <div class="mandate-left">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Meridian Mandate Rules</div>
+        <div class="rule-row">
+          <div class="rule-icon">💵</div>
+          <div class="rule-label">FCF Yield Floor</div>
+          <div class="rule-val hl">≥ 4.0%</div>
+          <span class="rule-badge pass">HARD FLOOR</span>
+        </div>
+        <div class="rule-row">
+          <div class="rule-icon">🏦</div>
+          <div class="rule-label">Debt/EBITDA Ceiling</div>
+          <div class="rule-val hl">&lt; 2.5×</div>
+          <span class="rule-badge pass">HARD CEILING</span>
+        </div>
+        <div class="rule-row">
+          <div class="rule-icon">📈</div>
+          <div class="rule-label">Organic Growth</div>
+          <div class="rule-val hg">&gt; 7%</div>
+          <span class="rule-badge" style="background:rgba(251,191,36,.1);color:var(--gold)">PREFERRED</span>
+        </div>
+        <div class="rule-row">
+          <div class="rule-icon">📊</div>
+          <div class="rule-label">EBITDAC Margin</div>
+          <div class="rule-val hg">&gt; 27%</div>
+          <span class="rule-badge" style="background:rgba(251,191,36,.1);color:var(--gold)">PREFERRED</span>
+        </div>
+        <div class="rule-row">
+          <div class="rule-icon">🎯</div>
+          <div class="rule-label">Sector Focus</div>
+          <div class="rule-val" style="font-size:11px;color:var(--muted)">Middle-Market P&amp;C Brokerage</div>
+          <span class="rule-badge" style="background:rgba(56,189,248,.1);color:var(--cyan)">MANDATE</span>
+        </div>
+        <div class="rule-row">
+          <div class="rule-icon">🏆</div>
+          <div class="rule-label">Verdict Thresholds</div>
+          <div style="display:flex;gap:5px;font-size:10px">
+            <span class="verdict-chip vc-sb">&gt;80% → STRONG BUY</span>
+            <span class="verdict-chip vc-h">50–80% → HOLD</span>
+            <span class="verdict-chip vc-p">&lt;50% → PASS</span>
+          </div>
+        </div>
+        <div style="background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);border-radius:12px;padding:12px 14px;margin-top:4px">
+          <div style="font-size:11px;color:var(--green);font-weight:700;margin-bottom:5px">Example Passing Output — Brown &amp; Brown (BRO)</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.6">Score: <strong style="color:var(--white)">95.0%</strong> &nbsp;|&nbsp; Verdict: <strong style="color:var(--green)">STRONG BUY</strong> &nbsp;|&nbsp; FCF Yield: <strong style="color:var(--white)">4.85%</strong> &nbsp;|&nbsp; D/E: <strong style="color:var(--white)">2.20×</strong></div>
+        </div>
+      </div>
+      <div class="mandate-right">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Preset Competitor Universe (8 Targets)</div>
+        <div class="comp-table">
+          <table>
+            <thead><tr><th>Company</th><th>FCF Yield</th><th>Debt/EBITDA</th><th>Organic</th><th>Verdict</th></tr></thead>
+            <tbody>
+              <tr><td><strong style="color:var(--white)">Brown &amp; Brown</strong><br><span style="font-size:10px;color:var(--muted)">BRO · Public</span></td><td style="color:var(--green);font-weight:700">4.85%</td><td style="color:var(--green);font-weight:700">2.20×</td><td>9.8%</td><td><span class="verdict-chip vc-sb">STRONG BUY</span></td></tr>
+              <tr><td><strong style="color:var(--white)">Lockton Cos.</strong><br><span style="font-size:10px;color:var(--muted)">Private · Partnership</span></td><td style="color:var(--green);font-weight:700">5.20%</td><td style="color:var(--green);font-weight:700">1.80×</td><td>13.5%</td><td><span class="verdict-chip vc-sb">STRONG BUY</span></td></tr>
+              <tr><td><strong style="color:var(--white)">NFP / Aon</strong><br><span style="font-size:10px;color:var(--muted)">AON · Subsidiary</span></td><td style="color:var(--green);font-weight:700">4.90%</td><td style="color:var(--gold);font-weight:700">2.40×</td><td>8.8%</td><td><span class="verdict-chip vc-sb">STRONG BUY</span></td></tr>
+              <tr><td><strong style="color:var(--white)">TIH (ex-Truist)</strong><br><span style="font-size:10px;color:var(--muted)">Stone Point · CD&amp;R</span></td><td style="color:var(--gold);font-weight:700">4.10%</td><td style="color:var(--red);font-weight:700">3.80×</td><td>9.1%</td><td><span class="verdict-chip vc-h">HOLD</span></td></tr>
+              <tr><td><strong style="color:var(--white)">Alliant</strong><br><span style="font-size:10px;color:var(--muted)">PE · Stone Point</span></td><td style="color:var(--red);font-weight:700">3.45%</td><td style="color:var(--red);font-weight:700">4.80×</td><td>11.2%</td><td><span class="verdict-chip vc-h">HOLD</span></td></tr>
+              <tr><td><strong style="color:var(--white)">USI Insurance</strong><br><span style="font-size:10px;color:var(--muted)">PE · KKR &amp; CDPQ</span></td><td style="color:var(--red);font-weight:700">3.80%</td><td style="color:var(--red);font-weight:700">4.60×</td><td>7.9%</td><td><span class="verdict-chip vc-p">PASS</span></td></tr>
+              <tr><td><strong style="color:var(--white)">Acrisure</strong><br><span style="font-size:10px;color:var(--muted)">PE · BDT &amp; Silver Lake</span></td><td style="color:var(--red);font-weight:700">3.20%</td><td style="color:var(--red);font-weight:700">5.25×</td><td>8.4%</td><td><span class="verdict-chip vc-p">PASS</span></td></tr>
+              <tr><td><strong style="color:var(--white)">AssuredPartners</strong><br><span style="font-size:10px;color:var(--muted)">PE · GTCR &amp; Apax</span></td><td style="color:var(--red);font-weight:700">2.90%</td><td style="color:var(--red);font-weight:700">5.80×</td><td>6.8%</td><td><span class="verdict-chip vc-p">PASS</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 4 – 5-AGENT PIPELINE ═══════ -->
+<div class="slide" id="s4">
+  <div class="topbar"></div>
+  <div class="g1" style="background:var(--magenta);opacity:.08"></div>
+  <div class="body">
+    <div class="tag">How It Works</div>
+    <h2>The 5-Agent GraphRAG Pipeline</h2>
+    <p class="sub hint-txt">Click any agent to inspect its data sources, tools, and outputs</p>
+    <div class="pipe-wrap">
+      <div class="pipe-row">
+        <div class="node inp on" onclick="showDet(0)" id="n0">
+          <div class="nn">▶</div>
+          <div class="nl">Analyst<br>Input</div>
+          <div class="ns">Thesis + Ticker</div>
+        </div>
+        <div class="arr"></div>
+        <div class="node" onclick="showDet(1)" id="n1">
+          <div class="nn">1</div>
+          <div class="nl">SEC EDGAR<br>Agent</div>
+          <div class="ns">Local XBRL<br>+ DuckDB</div>
+        </div>
+        <div class="arr"></div>
+        <div class="node" onclick="showDet(2)" id="n2">
+          <div class="nn">2</div>
+          <div class="nl">Transcript<br>Sentiment</div>
+          <div class="ns">Earnings Call<br>+ Web Scrape</div>
+        </div>
+        <div class="arr"></div>
+        <div class="node" onclick="showDet(3)" id="n3">
+          <div class="nn">3</div>
+          <div class="nl">Peer Comps<br>Agent</div>
+          <div class="ns">Multiples<br>+ ddgs Search</div>
+        </div>
+        <div class="arr"></div>
+        <div class="node" onclick="showDet(4)" id="n4">
+          <div class="nn">4</div>
+          <div class="nl">KG Strategy<br>Engine</div>
+          <div class="ns">NetworkX<br>+ GARP Scoring</div>
+        </div>
+        <div class="arr"></div>
+        <div class="node" onclick="showDet(5)" id="n5">
+          <div class="nn">5</div>
+          <div class="nl">Synthesis<br>Memo Writer</div>
+          <div class="ns">gemini-2.5-pro<br>TCS GenAI Lab</div>
+        </div>
+        <div class="arr"></div>
+        <div class="node out" onclick="showDet(6)" id="n6">
+          <div class="nn">✓</div>
+          <div class="nl">Research<br>Cockpit</div>
+          <div class="ns">Bento UI<br>+ PDF Export</div>
+        </div>
+      </div>
+      <div class="det show" id="det">
+        <div id="d0"></div><div id="d1"></div><div id="d2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 5 – ARCHITECTURE ═══════ -->
+<div class="slide" id="s5">
+  <div class="topbar"></div>
+  <div class="body">
+    <div class="tag">Technical Architecture</div>
+    <h2>Enterprise Tech Stack — Runs 100% Locally on Windows</h2>
+    <p class="sub">No Docker, no cloud dependency — FastAPI + Next.js + SQLite on native Windows, secured via TCS GenAI Lab gateway</p>
+    <div class="arch-wrap">
+      <div class="arch-list" id="arch-list">
+        <div class="al-row sel" onclick="selA(0)"><div class="li">🖥️</div><div class="ln">Next.js Frontend</div><div class="lt">App Router · Tailwind · Bento UI</div><div class="lb">:3000</div></div>
+        <div class="al-row" onclick="selA(1)"><div class="li">⚡</div><div class="ln">FastAPI Backend</div><div class="lt">uvicorn · CORS · OpenAPI /docs</div><div class="lb">:8000</div></div>
+        <div class="al-row" onclick="selA(2)"><div class="li">🗄️</div><div class="ln">Data Layer</div><div class="lt">SQLite cache · DuckDB · Local XBRL</div><div class="lb">Local Files</div></div>
+        <div class="al-row" onclick="selA(3)"><div class="li">🕸️</div><div class="ln">LangGraph Engine</div><div class="lt">Stateful graph · AgentState schema</div><div class="lb">Orchestration</div></div>
+        <div class="al-row" onclick="selA(4)"><div class="li">📊</div><div class="ln">NetworkX KG</div><div class="lt">DiGraph · 16 nodes · Pillar mapping</div><div class="lb">Knowledge Graph</div></div>
+        <div class="al-row" onclick="selA(5)"><div class="li">🧠</div><div class="ln">TCS GenAI Lab LLM</div><div class="lt">gemini-2.5-pro · httpx SSL proxy</div><div class="lb">genailab.tcs.in</div></div>
+        <div class="al-row" onclick="selA(6)"><div class="li">🛡️</div><div class="ln">Security &amp; Safety</div><div class="lt">Read-only DB · AgentScope contracts</div><div class="lb">Guardrails</div></div>
+      </div>
+      <div class="arch-det" id="arch-det"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 6 – LIVE CASE STUDY ═══════ -->
+<div class="slide" id="s6">
+  <div class="topbar"></div>
+  <div class="g2" style="background:var(--green)"></div>
+  <div class="body">
+    <div class="tag">Live Demo Output</div>
+    <h2>Case Study: Brown &amp; Brown, Inc. (NYSE: BRO)</h2>
+    <p class="sub">Real output from the MERIDIAN pipeline — thesis validated against audited SEC EDGAR data in under 2 minutes</p>
+    <div class="case-wrap">
+      <div class="case-left">
+        <div class="input-mock">
+          <div class="label">Analyst Thesis Input</div>
+          <div class="val">"Brown &amp; Brown represents the quintessential Meridian GARP benchmark: exceptional Free Cash Flow yield (4.85%), pristine defensive balance sheet (2.20× Debt/EBITDA), industry-best 33.5% EBITDAC margins, and consistent organic compounding above 9.5%."</div>
+          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+            <span class="badge badge-c">BRO · NYSE</span>
+            <span class="badge badge-c">CIK: 0000079282</span>
+            <span class="badge badge-c">Holdings: 4.8% AUM ($54M)</span>
+          </div>
+        </div>
+        <div class="score-box">
+          <div class="score-circle">
+            <div class="sv">95%</div>
+            <div class="sl">Score</div>
+          </div>
+          <div class="score-info">
+            <h4>Meridian Compatibility Score: <span class="hgr">95.0%</span> — STRONG BUY</h4>
+            <p>KG nodes: 16 &nbsp;·&nbsp; Edges: 24 &nbsp;·&nbsp; Pillars: Business News, Tech &amp; IP, Finance &amp; Ops<br>
+            Price Target: <strong style="color:var(--white)">$124.00</strong> vs Current $104.50 &nbsp;→&nbsp; <strong style="color:var(--green)">+18.7% upside</strong><br>
+            Core Allocation Ceiling: <strong style="color:var(--white)">6.5% AUM</strong> &nbsp;·&nbsp; Stop-loss: -8.5%</p>
+          </div>
+        </div>
+        <div class="rules-grid">
+          <div class="rule-item"><div class="ri-dot pass"></div><div class="ri-label">FCF Yield Floor ≥ 4.0%</div><div class="ri-val hgr">4.85% ✓</div></div>
+          <div class="rule-item"><div class="ri-dot pass"></div><div class="ri-label">Debt/EBITDA Ceiling &lt; 2.5×</div><div class="ri-val hgr">2.20× ✓</div></div>
+          <div class="rule-item"><div class="ri-dot pass"></div><div class="ri-label">Revenue &amp; EBITDAC Margin</div><div class="ri-val hgr">$4.76B · 33.5% ✓</div></div>
+          <div class="rule-item"><div class="ri-dot pass"></div><div class="ri-label">Organic Growth &gt; 7%</div><div class="ri-val hgr">9.8% ✓</div></div>
+        </div>
+      </div>
+      <div class="case-right">
+        <div class="bull-bear">
+          <div class="bull">
+            <h5>🐂 Bull Case &nbsp;(65%)</h5>
+            <ul>
+              <li>Commercial property replacement value inflation &amp; surplus lines hardening support 9.8% organic compounding</li>
+              <li>FCF yield of 4.85% funds 10–15 tuck-in acquisitions annually at 8–10× multiples</li>
+              <li>EBITDAC margins expanding toward 35% via digital policy binding tools</li>
+              <li>PT: <strong style="color:var(--green)">$142.60</strong></li>
+            </ul>
+          </div>
+          <div class="bear">
+            <h5>🐻 Bear Case &nbsp;(35%)</h5>
+            <ul>
+              <li>Commercial property rate cycle softening from 8–10% to low single digits would compress organic growth</li>
+              <li>PE consolidator sign-on packages risk poaching senior producers, escalating retention costs</li>
+              <li>Changes in contingent commission agreements with carriers</li>
+              <li>PT: <strong style="color:var(--red)">$88.83</strong></li>
+            </ul>
+          </div>
+        </div>
+        <div class="memo-preview">
+          <h4>📄 Generated Investment Memo Sections <span class="badge badge-c">Markdown + PDF Export</span></h4>
+          <div class="memo-line"><strong>1. Executive Summary &amp; Thesis Validation</strong></div>
+          <div class="memo-line"><strong>2. Strategic Fit with Meridian Mandate</strong> — FCF &amp; Debt hurdle analysis</div>
+          <div class="memo-line"><strong>3. Audited SEC Evidence</strong> — Accession #0001193125-26-318251 · 10-Q FY2026-Q2</div>
+          <div class="memo-line"><strong>4. Industry &amp; Transcript Sentiment</strong> — Executive tone, renewal rate guidance</div>
+          <div class="memo-line"><strong>5. Bull &amp; Bear Catalyst Matrix</strong> — Probability-weighted scenarios</div>
+          <div class="memo-line"><strong>6. Final Recommendation</strong> — Action, allocation, stop-loss parameters</div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <span class="badge badge-g">KG: 16 nodes · 24 edges</span>
+            <span class="badge badge-c">SEC CIK: 0000079282</span>
+            <span class="badge" style="background:rgba(192,132,252,.12);color:var(--magenta)">~2 min execution</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 7 – ROI & NEXT STEPS ═══════ -->
+<div class="slide" id="s7">
+  <div class="topbar"></div>
+  <div class="g1" style="background:var(--gold);opacity:.07"></div>
+  <div class="body">
+    <div class="tag">Business Value &amp; Next Steps</div>
+    <h2>ROI, Roadmap &amp; Getting Started</h2>
+    <p class="sub">Quantifiable outcomes for institutional research teams and a clear path to production</p>
+    <div class="roi-wrap">
+      <div class="roi-left">
+        <div class="metric-row">
+          <div class="mc mc1"><div class="mv" style="color:var(--cyan)" data-t="95">0<span style="font-size:18px">%</span></div><div class="ml">Reduction in research cycle time</div><div class="ms hl">3–5 days → &lt;2 minutes</div></div>
+          <div class="mc mc2"><div class="mv" style="color:var(--magenta)" data-t="8">0<span style="font-size:18px">×</span></div><div class="ml">Coverage capacity increase</div><div class="ms hm">15 stocks → 120+ per analyst</div></div>
+          <div class="mc mc3"><div class="mv" style="color:var(--gold)" data-t="100">0<span style="font-size:18px">%</span></div><div class="ml">Mandate compliance audit trail</div><div class="ms hg">Every rule logged &amp; evidenced</div></div>
+          <div class="mc mc4"><div class="mv" style="color:var(--green)" data-t="0">0<span style="font-size:18px">×</span></div><div class="ml">Manual data copy-paste required</div><div class="ms hgr">All from live APIs &amp; local XBRL</div></div>
+        </div>
+        <div class="roadmap">
+          <h4>Product Roadmap</h4>
+          <div class="rm-row"><div class="rm-dot rm-done"></div><div class="rmc"><strong>Phase 1 — Complete ✅</strong><p>5-agent pipeline · GARP scoring · 8 preset competitors · Bento cockpit prototype · FastAPI backend · NetworkX KG</p></div></div>
+          <div class="rm-row"><div class="rm-dot rm-todo"></div><div class="rmc"><strong>Phase 2 — In Progress →</strong><p>Full Next.js bento frontend · Playwright demo automation · Azure production deployment blueprint · Expanded AgentScope tests</p></div></div>
+          <div class="rm-row"><div class="rm-dot rm-future"></div><div class="rmc"><strong>Phase 3 — Planned ◎</strong><p>Multi-tenant auth (Azure AD) · LLM fine-tuning on P&amp;C domain data · SSE real-time telemetry streaming · Coverage expansion to 50+ brokers</p></div></div>
+        </div>
+      </div>
+      <div class="roi-right">
+        <div class="cta-box">
+          <h3>🚀 Run the Demo in 60 Seconds</h3>
+          <p>Three launch options — from instant browser prototype to full production stack:</p>
+          <div class="cta-steps">
+            <div class="cs"><div class="csn">A</div><div><strong>Standalone Prototype</strong> — Open index.html in Chrome, Edge or Firefox. Zero install.</div><span>Browser → instant</span></div>
+            <div class="cs"><div class="csn">B</div><div><strong>Python Backend</strong> — pip install + uvicorn main:app --port 8000 → POST /api/research/analyze</div><span>FastAPI :8000</span></div>
+            <div class="cs"><div class="csn">C</div><div><strong>Full Next.js Stack</strong> — npm install + npm run dev → localhost:3000 bento cockpit</div><span>Next.js :3000</span></div>
+          </div>
+        </div>
+        <div class="card" style="padding:16px 18px">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Demo Verification Command</div>
+          <div class="code-block">python -c <span class="s">"</span>
+from backend.agent_core import default_engine
+res = default_engine.execute_research_pipeline(
+  <span class="s">'BRO'</span>, <span class="s">'Testing GARP thesis.'</span>
+)
+print(<span class="s">'Score:'</span>, res[<span class="s">'meridian_compatibility_score'</span>], <span class="s">'%'</span>)
+print(<span class="s">'Verdict:'</span>, res[<span class="s">'verdict'</span>])
+print(<span class="s">'KG Nodes:'</span>, res[<span class="s">'knowledge_graph'</span>][<span class="s">'total_nodes'</span>])
+<span class="s">"</span>
+<span class="c"># Expected: Score: 95.0% | Verdict: STRONG BUY | KG Nodes: 16</span></div>
+        </div>
+        <div style="background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.2);border-radius:12px;padding:12px 16px;font-size:11px;color:var(--muted);line-height:1.6">
+          <strong style="color:var(--cyan)">Contact &amp; Keys</strong><br>
+          TCS GenAI Lab Gateway: <code style="color:var(--cyan);font-family:JetBrains Mono,monospace">https://genailab.tcs.in/v1</code><br>
+          Model: <code style="color:var(--cyan);font-family:JetBrains Mono,monospace">gemini-2.5-pro</code> &nbsp;·&nbsp; API Docs: <code style="color:var(--cyan);font-family:JetBrains Mono,monospace">localhost:8000/docs</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<div class="nav">
+  <button onclick="go(-1)">&#8592;</button>
+  <div class="dots" id="dots"></div>
+  <span id="ctr">1 / 7</span>
+  <button onclick="go(1)">&#8594;</button>
+</div>
+
+<script>
+// ── Navigation ──────────────────────────────────────────────────────
+const slides = document.querySelectorAll('.slide');
+const dotC   = document.getElementById('dots');
+const ctr    = document.getElementById('ctr');
+let cur = 0;
+
+slides.forEach((_,i)=>{
+  const d=document.createElement('div');
+  d.className='dot'+(i===0?' on':'');
+  d.onclick=()=>goTo(i);
+  dotC.appendChild(d);
+});
+
+function goTo(n){
+  const p=cur;
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('exit');
+  setTimeout(()=>slides[p].classList.remove('exit'),480);
+  cur=(n+slides.length)%slides.length;
+  slides[cur].classList.add('active');
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i===cur));
+  ctr.textContent=`${cur+1} / ${slides.length}`;
+  if(cur===6) countUp();
+}
+function go(d){goTo(cur+d)}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown') go(1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')   go(-1);
+});
+
+// ── Slide 4: Agent detail data ───────────────────────────────────────
+const agents = [
+  {
+    h:'Analyst Input',
+    c0:'What the analyst provides',
+    l0:['Natural-language investment thesis statement','Target company ticker or preset competitor ID','Portfolio holdings context & AUM position','Risk mandate (GARP, growth, defensive)','Investment horizon (1Q, 2Q, 4Q)'],
+    c1:'LangGraph State Initialisation',
+    l1:['AgentState schema created with all input params','Orchestrator routes to Agent 1 (SEC Bulk Parser)','Execution logs array initialised for telemetry','SQLite cache checked for prior run data'],
+    c2:'Preset Universe Available',
+    l2:['8 pre-loaded competitors with full fundamentals','BRO, LOCKTON, NFP, TIH, ALLIANT, USI, ACRISURE, ASSUREDPARTNERS','Custom ticker fallback with estimated fundamentals','No API key required for preset analysis'],
+  },
+  {
+    h:'SEC EDGAR Agent — Agent 1',
+    c0:'Local Data Sources',
+    l0:['Resources/companyfacts/ XBRL JSON (pre-downloaded)','Resources/2025q1–2026q3 quarterly datasets','DuckDB sub.txt + num.txt queries for financials','SQLite cache for repeated lookups'],
+    c1:'What It Extracts',
+    l1:['Audited broker commission revenues (LTM)','EBITDA, operating income & EBITDAC margins','Total debt obligations & Debt/EBITDA ratio','Free cash flow generation & FCF yield','SEC filing accession # & CIK reference'],
+    c2:'APIs & Endpoints',
+    l2:['data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json','Local XBRL: Resources/companyfacts/CIK*.json','DuckDB: Resources/2026q3/sub.txt + num.txt','Fallback: INSURANCE_PRESETS fundamentals dict'],
+  },
+  {
+    h:'Transcript Sentiment Agent — Agent 2',
+    c0:'Data Collection',
+    l0:['DuckDuckGo Search (ddgs) for earnings call transcripts','BeautifulSoup4 web scraper for transcript pages','FMP /api/v3/earning_call_transcript endpoint','Finnhub transcript API (optional key)'],
+    c1:'Sentiment Signals Extracted',
+    l1:['Executive tone: Confident / Cautious / Defensive','Sentiment score (0–100) from NLP analysis','Commercial renewal rate guidance commentary','Margin expansion / compression guidance','Analyst Q&A skepticism detection'],
+    c2:'Business Interpretation',
+    l2:['High sentiment (>70): bullish organic guidance','Low sentiment (<40): flag for bear case','Rate hardening commentary = FCF expansion signal','Producer compensation comments = margin risk','Capex ROI signals for capital efficiency review'],
+  },
+  {
+    h:'Peer Comps Agent — Agent 3',
+    c0:'Market Intelligence Tools',
+    l0:['FMP Stock Peers endpoint for comparable set','FMP Multiples: NTM P/E, EV/EBITDA, Op. Margin','DuckDuckGo Search (ddgs) for sector news','Tavily AI Search (optional) for deeper context'],
+    c1:'Metrics Benchmarked',
+    l1:['NTM P/E and EV/EBITDA vs peer median','Operating margin vs middle-market broker avg ~29.5%','PEG ratio spread (growth vs. valuation)','PE-backed leverage vs. public broker leverage','Organic growth rank within peer cohort'],
+    c2:'Intelligence Compiled',
+    l2:['Market news digest (5–10 articles per run)','Peer leverage comparison: PE roll-ups at 4.5–5.5×','Sector rate hardening / softening signals','M&A pipeline activity in brokerage space','Analyst consensus & price target aggregates'],
+  },
+  {
+    h:'KG Strategy Engine — Agent 4',
+    c0:'NetworkX Knowledge Graph',
+    l0:['DiGraph with 16 nodes & 24 edges (typical run)','3 Core Pillars: Business News, Tech & IP, Finance & Ops','Nodes: Target, Peers, KPIs, Risk Factors, Mandate Rules','Edge weights reflect relationship strength & risk'],
+    c1:'GARP Scoring Calculation',
+    l1:['FCF Yield ≥ 4.0% → +40 points (hard floor)','Debt/EBITDA < 2.5× → +30 points (hard ceiling)','Organic Growth > 7% → +15 points (preferred)','EBITDAC Margin > 27% → +15 points (preferred)','Final score 0–100 → STRONG BUY / HOLD / PASS'],
+    c2:'Pillar Alignment Output',
+    l2:['Business News: M&A activity, market position','Tech & IP: proprietary analytics, digital tools','Finance & Ops: cash conversion, debt maturity','Risk Factors: Item 1A from SEC 10-K filing','Strategic fit narrative for memo section 2'],
+  },
+  {
+    h:'Synthesis Memo Writer — Agent 5',
+    c0:'LLM Configuration',
+    l0:['Model: gemini-2.5-pro via TCS GenAI Lab','Base URL: https://genailab.tcs.in/v1','LangChain ChatOpenAI binding with max_tokens=4096','httpx.Client(verify=False) for corporate SSL proxy','Temperature 0.2 for consistent, factual output'],
+    c1:'Memo Sections Generated',
+    l1:['1. Executive Summary & Thesis Validation','2. Strategic Fit with Meridian Mandate','3. Audited Regulatory & Financial Evidence (SEC)','4. Industry & Transcript Sentiment','5. Bull & Bear Catalyst Matrix (probability-weighted)','6. Final Investment Recommendation & action'],
+    c2:'Output Formats',
+    l2:['Structured Markdown research memorandum','JSON Bull/Bear case with probability %','Price target (current, bull PT, bear PT)','Upside % calculation (target vs. current price)','One-click PDF export & Markdown download','SQLite cache storage for audit trail'],
+  },
+  {
+    h:'Research Cockpit — Final Output',
+    c0:'Bento Dashboard UI',
+    l0:['Dark bento cockpit (#121721 canvas)','Split-decimal financial metrics ($428,14.80 style)','Live telemetry terminal log during execution','Dual-wave financial trajectory chart (FinSight-inspired)','Bull/Bear pastel-neon catalyst cards'],
+    c1:'Data Displayed',
+    l1:['Meridian Compatibility Score (0–100%) gauge','Rule-by-rule mandate compliance breakdown','NetworkX KG entity pill representation','Peer valuation multiple comparison table','Audited SEC filing reference & accession number'],
+    c2:'Export & Reporting',
+    l2:['One-click PDF generation (Print API)','Markdown export for compliance archiving','Execution log download for audit trail','API endpoint: POST /api/research/analyze','OpenAPI docs: localhost:8000/docs'],
+  },
+];
+
+let curN=0;
+function showDet(i){
+  document.querySelectorAll('.node').forEach((n,j)=>n.classList.toggle('on',j===i));
+  curN=i;
+  const a=agents[i];
+  const mk=(c,l)=>`<div><h4>${c}</h4><ul>${l.map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+  document.getElementById('det').innerHTML=`<div style="grid-column:1/-1;font-size:13px;font-weight:700;color:var(--white);border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:2px">${a.h}</div>
+    ${mk(a.c0,a.l0)}${mk(a.c1,a.l1)}${mk(a.c2,a.l2)}`;
+  document.getElementById('det').className='det show';
+}
+// default open
+setTimeout(()=>showDet(0),100);
+
+// ── Slide 5: Architecture detail ─────────────────────────────────────
+const archD=[
+  {
+    t:'🖥️ Next.js App Router Frontend',
+    p:'Bento-style research cockpit built with Next.js 14 App Router, Tailwind CSS MERIDIAN v3.0 design tokens. Components: FloatingDock, HeaderNav, ThesisInputCard, BentoMetricCard, InteractiveWaveChart, BullBearCard, InvestmentMemoView.',
+    c:`<span class="k">// tailwind.config.js — MERIDIAN tokens</span>
+colors: {
+  <span class="s">'meridian-bg'</span>:   <span class="s">'#121721'</span>,
+  <span class="s">'meridian-card'</span>: <span class="s">'#18202F'</span>,
+  <span class="s">'cyan'</span>:          <span class="s">'#58C3F8'</span>,
+  <span class="s">'magenta'</span>:      <span class="s">'#DC7DE5'</span>,
+  <span class="s">'gold'</span>:          <span class="s">'#D3C689'</span>,
+}`,
+  },
+  {
+    t:'⚡ FastAPI Backend — uvicorn Server',
+    p:'FastAPI v3.0 on port 8000. Auto-generated OpenAPI interactive docs at /docs. Endpoints: GET /api/presets, GET /api/knowledge-graph/{id}, GET /api/sec-evidence/{id}, POST /api/research/analyze, POST /api/chat-copilot.',
+    c:`<span class="k">uvicorn</span> backend.main:app \\
+  --host 0.0.0.0 --port 8000 --reload
+<span class="c"># Key endpoints:</span>
+POST /api/research/analyze
+GET  /api/sec-evidence/brown_and_brown
+GET  /api/knowledge-graph/bro
+GET  /health  <span class="c"># smoke test</span>`,
+  },
+  {
+    t:'🗄️ Data Layer — SQLite + DuckDB + XBRL',
+    p:'Three-tier local data strategy: (1) SQLite meridian_cache.db for company context & report storage, (2) DuckDB for high-speed querying of 2025q1–2026q3 quarterly SEC bulk datasets (sub.txt, num.txt), (3) Local XBRL JSON companyfacts for audited GAAP facts.',
+    c:`<span class="c"># Resources/ folder structure:</span>
+companyfacts/CIK0000079282.json  <span class="c"># BRO XBRL</span>
+2026q3/sub.txt                   <span class="c"># DuckDB</span>
+2026q3/num.txt                   <span class="c"># DuckDB</span>
+company_tickers.json             <span class="c"># 10k+ CIK map</span>
+meridian_cache.db                <span class="c"># SQLite cache</span>`,
+  },
+  {
+    t:'🕸️ LangGraph — Stateful Agent Orchestration',
+    p:'LangGraph compiles a directed graph of 5 agent nodes sharing an AgentState schema. Execution flows: Input → Agent1(SEC) → Agent2(Transcript) → Agent3(Peers) → Agent4(KG+Strategy) → Agent5(Synthesis). Each agent appends to a shared execution_logs list for telemetry.',
+    c:`graph = StateGraph(AgentState)
+graph.add_node(<span class="s">"sec"</span>,        sec_agent)
+graph.add_node(<span class="s">"transcript"</span>, transcript_agent)
+graph.add_node(<span class="s">"peer"</span>,       peer_agent)
+graph.add_node(<span class="s">"strategy"</span>,   kg_strategy_agent)
+graph.add_node(<span class="s">"synthesis"</span>,  synthesis_agent)
+graph.set_entry_point(<span class="s">"sec"</span>)`,
+  },
+  {
+    t:'📊 NetworkX Knowledge Graph (DiGraph)',
+    p:'NetworkX DiGraph with 3 core pillars connecting target entity, peers, KPI metrics, and SEC risk factors. Edge weights reflect thesis alignment strength. Compatibility Score computed from rule-weighted pillar alignment across Business News, Tech & IP, and Finance & Ops.',
+    c:`<span class="c"># DiGraph structure (16 nodes, 24 edges)</span>
+G = nx.DiGraph()
+G.add_node(<span class="s">"BRO"</span>, type=<span class="s">"TARGET"</span>)
+G.add_node(<span class="s">"AJG"</span>, type=<span class="s">"PEER"</span>)
+G.add_node(<span class="s">"FCF_YIELD_4.85"</span>, type=<span class="s">"KPI"</span>)
+G.add_edge(<span class="s">"BRO"</span>, <span class="s">"FCF_YIELD_4.85"</span>,
+           weight=0.95, pillar=<span class="s">"Finance"</span>)`,
+  },
+  {
+    t:'🧠 TCS GenAI Lab — gemini-2.5-pro',
+    p:'LangChain ChatOpenAI bound to the internal TCS GenAI Lab HTTPS gateway. Corporate SSL handled via httpx.Client(verify=False). Temperature=0.2 for deterministic, factual memo output. Max tokens 4096. Business Buddy chat-copilot endpoint uses temperature=0.3 for more conversational tone.',
+    c:`ChatOpenAI(
+  model=<span class="s">"gemini-2.5-pro"</span>,
+  openai_api_base=<span class="s">"https://genailab.tcs.in/v1"</span>,
+  temperature=0.2,
+  max_tokens=4096,
+  http_client=httpx.Client(
+    verify=<span class="k">False</span>,  <span class="c"># corporate SSL proxy</span>
+    timeout=httpx.Timeout(45.0)
+  )
+)`,
+  },
+  {
+    t:'🛡️ Security, Safety &amp; Guardrails',
+    p:'Every agent operates under AgentScope contracts: read-only SQLite connection, role-filtered queries, structured JSON outputs with cited sources. No agent writes to the database. API keys in .env only, never committed. Keys: OPENAI_API_KEY (TCS Lab), SEC_USER_AGENT, optional FMP_API_KEY, TAVILY_API_KEY.',
+    c:`<span class="k">class</span> AgentScope:
+  read_only:        <span class="s">bool = True</span>
+  cite_sources:     <span class="s">bool = True</span>
+  max_tokens:       <span class="s">int  = 4096</span>
+  structured_json:  <span class="s">bool = True</span>
+  no_db_writes:     <span class="s">bool = True</span>
+<span class="c"># Scope tests required before agent is "done"</span>`,
+  },
+];
+
+function selA(i){
+  document.querySelectorAll('.al-row').forEach((r,j)=>r.classList.toggle('sel',j===i));
+  const d=archD[i];
+  document.getElementById('arch-det').innerHTML=`
+    <h3>${d.t}</h3>
+    <p>${d.p}</p>
+    <div class="code-block">${d.c}</div>`;
+}
+selA(0);
+
+// ── Slide 7: Count-up animation ────────────────────────────────────
+function countUp(){
+  document.querySelectorAll('.mv[data-t]').forEach(el=>{
+    const t=parseInt(el.dataset.t);
+    const s=el.querySelector('span')?.outerHTML||'';
+    let v=0;
+    const step=Math.max(1,Math.ceil(t/36));
+    const timer=setInterval(()=>{
+      v=Math.min(v+step,t);
+      el.innerHTML=v+s;
+      if(v>=t)clearInterval(timer);
+    },28);
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,2580 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>MERIDIAN | Business Observability & M&A Integration</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            meridian: {
+              950: '#070b14',
+              900: '#0b1120',
+              850: '#0f172a',
+              800: '#15203b',
+              750: '#1a2744',
+              700: '#1e2e54',
+              accent: '#06b6d4',
+              brand: '#3b82f6',
+              danger: '#f43f5e',
+              warning: '#f59e0b',
+              success: '#10b981'
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #070b14; }
+    ::-webkit-scrollbar-thumb { background: #1e2e54; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+    
+    .pulse-danger { animation: pulseDanger 2s infinite; }
+    @keyframes pulseDanger {
+      0%, 100% { opacity: 1; filter: drop-shadow(0 0 8px rgba(244, 63, 94, 0.6)); }
+      50% { opacity: 0.6; filter: drop-shadow(0 0 2px rgba(244, 63, 94, 0.2)); }
+    }
+    .pulse-warning { animation: pulseWarning 2s infinite; }
+    @keyframes pulseWarning {
+      0%, 100% { opacity: 1; filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5)); }
+      50% { opacity: 0.6; filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.2)); }
+    }
+    
+    /* Sliding Drawer */
+    #drawerScrim {
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+    #sideDrawer {
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-meridian-950 text-slate-100 font-sans min-h-screen antialiased selection:bg-cyan-500 selection:text-white flex overflow-x-hidden">
+
+  <!-- ======================================================== -->
+  <!-- PERSISTENT LEFT SIDE RAIL (MATCHING ALL REFERENCE IMAGES) -->
+  <!-- ======================================================== -->
+  <aside id="sideRail" class="w-64 bg-meridian-900 border-r border-meridian-800/80 flex flex-col justify-between shrink-0 sticky top-0 h-screen z-40 select-none">
+    
+    <!-- Top Branding & Navigation -->
+    <div class="p-4 space-y-6">
+      
+      <!-- Brand Logo -->
+      <div class="px-2 py-1 flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <i data-lucide="layers" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-1.5">
+            <span class="font-extrabold tracking-wider text-base text-white">MERIDIAN</span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium">Brokerage Group</p>
+        </div>
+      </div>
+
+      <!-- Main Navigation Menu -->
+      <nav class="space-y-1 text-xs font-semibold" aria-label="Main Navigation">
+        
+        <!-- 1. Overview -->
+        <button onclick="navScreen('overview')" id="nav-overview" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-300 hover:bg-meridian-800/60 hover:text-white transition">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-400"></i>
+            <span>Overview</span>
+          </div>
+        </button>
+
+        <!-- 2. Business Journeys -->
+        <button onclick="navScreen('journey')" id="nav-journey" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg bg-blue-600 text-white shadow-sm transition">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="git-branch" class="w-4 h-4 text-white"></i>
+            <span>Business Journeys</span>
+          </div>
+          <span id="navJourneyBadge" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500 text-white">1</span>
+        </button>
+
+        <!-- 3. Agencies & M&A -->
+        <button onclick="navScreen('onboarding')" id="nav-onboarding" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-300 hover:bg-meridian-800/60 hover:text-white transition">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="building-2" class="w-4 h-4 text-slate-400"></i>
+            <span>Agencies & M&A</span>
+          </div>
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-950 text-amber-400 border border-amber-800">68%</span>
+        </button>
+
+        <!-- 4. Observability Catalog -->
+        <button onclick="navScreen('catalog')" id="nav-catalog" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-300 hover:bg-meridian-800/60 hover:text-white transition">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="database" class="w-4 h-4 text-slate-400"></i>
+            <span>Observability Catalog</span>
+          </div>
+          <span class="text-[10px] text-slate-400 font-mono">14</span>
+        </button>
+
+        <!-- 5. Incidents & Risks -->
+        <button onclick="navScreen('incident')" id="nav-incident" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-300 hover:bg-meridian-800/60 hover:text-white transition">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-slate-400"></i>
+            <span>Incidents & Risks</span>
+          </div>
+          <span id="navIncidentBadge" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-600 text-white">P1</span>
+        </button>
+
+        <!-- 6. AI Copilot -->
+        <button onclick="openCopilotDrawer()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-300 hover:bg-meridian-800/60 hover:text-white transition">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="sparkles" class="w-4 h-4 text-cyan-400"></i>
+            <span>AI Copilot</span>
+          </div>
+          <span class="text-[10px] px-1 py-0.2 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono">Grounded</span>
+        </button>
+
+        <!-- 7. Remediation Workbench -->
+        <button onclick="navScreen('workbench')" id="nav-workbench" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-300 hover:bg-meridian-800/60 hover:text-white transition">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="sliders" class="w-4 h-4 text-amber-400"></i>
+            <span>Remediation & HITL</span>
+          </div>
+          <span id="navWfBadge" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-800">Action</span>
+        </button>
+
+        <!-- 8. Audit Ledger -->
+        <button onclick="navScreen('audit')" id="nav-audit" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-300 hover:bg-meridian-800/60 hover:text-white transition">
+          <div class="flex items-center space-x-3">
+            <i data-lucide="scroll-text" class="w-4 h-4 text-slate-400"></i>
+            <span>Audit Trail Ledger</span>
+          </div>
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        </button>
+
+        <!-- Peripheral Items -->
+        <div class="pt-4 border-t border-meridian-800/60 space-y-1">
+          <button class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-400 hover:text-slate-200 transition">
+            <i data-lucide="file-bar-chart" class="w-4 h-4"></i>
+            <span>Reports</span>
+          </button>
+          <button class="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-400 hover:text-slate-200 transition">
+            <i data-lucide="settings" class="w-4 h-4"></i>
+            <span>Settings</span>
+          </button>
+        </div>
+
+      </nav>
+    </div>
+
+    <!-- Bottom Rail Footer (Exact Match from Image 1, 2, 3, 4, 5) -->
+    <div class="p-4 border-t border-meridian-800/80 bg-meridian-950/60 space-y-2">
+      <div class="text-[12px] font-extrabold text-white leading-tight">
+        From acquisition<br>to outcomes.
+      </div>
+      <p class="text-[11px] text-slate-400 leading-normal">
+        Know what matters before it becomes disruption.
+      </p>
+      <div class="pt-2 text-[10px] text-slate-500 flex items-center justify-between border-t border-meridian-800/40">
+        <span class="flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-ping"></span> Live v2.4</span>
+        <button onclick="replaySimulation()" class="hover:text-cyan-400 underline" title="Reset scenario">Replay</button>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ======================================================== -->
+  <!-- MAIN WORKSPACE CONTAINER -->
+  <!-- ======================================================== -->
+  <div class="flex-1 flex flex-col min-w-0">
+
+    <!-- TOP CONTEXT & COMMAND BAR -->
+    <header class="bg-meridian-900/90 backdrop-blur border-b border-meridian-800 sticky top-0 z-30 px-6 py-3">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        
+        <!-- Header Title / Breadcrumb -->
+        <div>
+          <div class="flex items-center space-x-2 text-xs text-slate-400">
+            <span>Business Journeys</span>
+            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            <span class="text-white font-semibold" id="topBreadcrumb">Cash-to-Carrier</span>
+          </div>
+          <div class="flex items-center space-x-3 mt-0.5">
+            <h1 class="text-lg font-bold text-white tracking-tight" id="topTitle">Cash-to-Carrier</h1>
+            <span class="text-xs text-slate-400" id="topSubtitle">&bull; From payment receipt to carrier disbursement</span>
+          </div>
+        </div>
+
+        <!-- Global Header Controls -->
+        <div class="flex items-center flex-wrap gap-2.5">
+          
+          <!-- Time Range Filter -->
+          <div class="flex items-center px-2.5 py-1.5 rounded-lg bg-meridian-850 border border-meridian-700/80 text-xs text-slate-300">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 mr-1.5 text-slate-400"></i>
+            <span>Last 24 hours</span>
+            <i data-lucide="chevron-down" class="w-3 h-3 ml-1.5 text-slate-400"></i>
+          </div>
+
+          <!-- Agency Filter Dropdown -->
+          <div class="flex items-center px-2.5 py-1.5 rounded-lg bg-meridian-850 border border-meridian-700/80 text-xs text-slate-300">
+            <i data-lucide="building" class="w-3.5 h-3.5 mr-1.5 text-slate-400"></i>
+            <select id="agencyFilter" onchange="handleAgencyFilter(this.value)" class="bg-transparent font-semibold text-white focus:outline-none cursor-pointer">
+              <option value="lakeshore" class="bg-slate-900 text-white">Lakeshore Insurance</option>
+              <option value="all" class="bg-slate-900 text-white">All Agencies (4 Total)</option>
+              <option value="riverside" class="bg-slate-900 text-white">Riverside Insurance</option>
+              <option value="pinecrest" class="bg-slate-900 text-white">Pinecrest Brokerage</option>
+            </select>
+          </div>
+
+          <!-- Persona / Role Selector -->
+          <div class="flex items-center px-2.5 py-1.5 rounded-lg bg-meridian-850 border border-meridian-700/80 text-xs">
+            <div id="roleAvatarPill" class="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center font-bold text-[10px] text-white mr-2">
+              DU
+            </div>
+            <select id="roleSelector" onchange="switchRole(this.value)" class="bg-transparent font-semibold text-white focus:outline-none cursor-pointer pr-1">
+              <option value="ops" class="bg-slate-900 text-white">Dana Whitfield (Hub Ops Manager)</option>
+              <option value="cash" class="bg-slate-900 text-white">Jordan Reyes (Cash Specialist)</option>
+              <option value="cfo" class="bg-slate-900 text-white">Marcus Hale (CFO / Finance Exec)</option>
+              <option value="it" class="bg-slate-900 text-white">Wei Chen (IT Engineer)</option>
+            </select>
+          </div>
+
+          <!-- Ask Copilot Button -->
+          <button onclick="openCopilotDrawer()" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-semibold shadow-md shadow-cyan-500/20 flex items-center transition">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 mr-1.5"></i> Ask Copilot
+          </button>
+
+          <!-- Replay Button -->
+          <button onclick="replaySimulation()" class="p-1.5 rounded-lg bg-meridian-850 hover:bg-meridian-800 text-slate-300 border border-meridian-700/80 transition" title="Replay Wednesday Anomaly">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- 7-DAY TIMELINE STRIP (CLICKABLE FILTER) -->
+      <div class="flex items-center space-x-2 pt-3 mt-2 border-t border-meridian-800/60 overflow-x-auto text-[11px]">
+        <span class="text-slate-400 font-medium shrink-0 mr-1 flex items-center">
+          <i data-lucide="calendar-days" class="w-3.5 h-3.5 mr-1 text-cyan-400"></i> Day Snapshot:
+        </span>
+        <div id="dayStripContainer" class="flex items-center space-x-2 shrink-0">
+          <!-- Dynamically populated -->
+        </div>
+        <div class="ml-auto text-slate-400 text-[11px] shrink-0 pl-2">
+          <span id="liveStatusClock" class="font-mono text-emerald-400 font-semibold">&bull; System Live 18:20 EST</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY (SWITCHABLE VIEWS) -->
+    <main class="flex-1 p-6 space-y-6">
+
+      <!-- ======================================================== -->
+      <!-- VIEW 1: CASH-TO-CARRIER JOURNEY (EXACT MATCH IMAGE 1 & 2) -->
+      <!-- ======================================================== -->
+      <div id="screen-journey" class="space-y-6">
+        
+        <!-- TOP 5-STAGE PIPELINE CARDS (IMAGE 1) -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3.5">
+          
+          <!-- Stage 1: Receive Payment -->
+          <div onclick="openStageDrawer(1)" class="bg-meridian-900 p-4 rounded-xl border border-meridian-800 hover:border-cyan-500 cursor-pointer transition flex flex-col justify-between group">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-xs border border-emerald-500/40">1</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800">Healthy</span>
+              </div>
+              <div class="font-bold text-white text-sm">Receive Payment</div>
+              <div class="text-[11px] text-slate-400">Bank / Lockbox</div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-meridian-800/80">
+              <div class="text-lg font-bold text-white font-mono">$4.6M</div>
+              <div class="text-[10px] text-slate-400">12,482 transactions</div>
+              <div class="text-[10px] text-emerald-400 font-medium mt-0.5">&uarr; +5% vs yesterday</div>
+            </div>
+          </div>
+
+          <!-- Stage 2: Deposit to Trust -->
+          <div onclick="openStageDrawer(2)" class="bg-meridian-900 p-4 rounded-xl border border-meridian-800 hover:border-cyan-500 cursor-pointer transition flex flex-col justify-between group">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-xs border border-emerald-500/40">2</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800">Healthy</span>
+              </div>
+              <div class="font-bold text-white text-sm">Deposit to Trust</div>
+              <div class="text-[11px] text-slate-400">Fiduciary Account</div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-meridian-800/80">
+              <div class="text-lg font-bold text-white font-mono">$4.6M</div>
+              <div class="text-[10px] text-slate-400">12,460 transactions</div>
+              <div class="text-[10px] text-emerald-400 font-medium mt-0.5">&uarr; +5% vs yesterday</div>
+            </div>
+          </div>
+
+          <!-- Stage 3: Apply Cash (FAILING / AT RISK IN IMAGE 1) -->
+          <div onclick="openStageDrawer(3)" id="cardStage3" class="bg-meridian-900 p-4 rounded-xl border border-rose-600 bg-rose-950/10 hover:border-rose-400 cursor-pointer transition flex flex-col justify-between group relative overflow-hidden">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span id="badgeNumStage3" class="w-7 h-7 rounded-full bg-rose-500 text-white font-bold flex items-center justify-center text-xs shadow-md shadow-rose-500/40 pulse-danger">3</span>
+                <span id="badgeStatusStage3" class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">At Risk</span>
+              </div>
+              <div class="font-bold text-rose-200 text-sm">Apply Cash</div>
+              <div class="text-[11px] text-slate-400">Match to customer/policy</div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-meridian-800/80 space-y-1">
+              <div>
+                <span class="text-base font-bold text-white font-mono" id="stage3AppliedVal">$3.5M</span>
+                <span class="text-[10px] text-slate-400 ml-1" id="stage3MatchPct">(61% match rate)</span>
+              </div>
+              <div class="text-[11px] font-bold text-rose-400" id="stage3UnappliedVal">$1.1M unapplied cash</div>
+              <div class="text-[10px] text-rose-300" id="stage3UnmatchedItems">3,561 transactions &bull; &uarr; +220%</div>
+            </div>
+          </div>
+
+          <!-- Stage 4: Reconcile -->
+          <div onclick="openStageDrawer(4)" id="cardStage4" class="bg-meridian-900 p-4 rounded-xl border border-amber-600/60 bg-amber-950/10 hover:border-amber-400 cursor-pointer transition flex flex-col justify-between group">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span id="badgeNumStage4" class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 font-bold flex items-center justify-center text-xs border border-amber-500/40">4</span>
+                <span id="badgeStatusStage4" class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-950 text-amber-400 border border-amber-800">Degraded</span>
+              </div>
+              <div class="font-bold text-white text-sm">Reconcile</div>
+              <div class="text-[11px] text-slate-400">Premium Payables</div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-meridian-800/80">
+              <div class="text-lg font-bold text-white font-mono">$3.3M</div>
+              <div class="text-[10px] text-slate-400">Ready for disbursement</div>
+              <div class="text-[10px] text-amber-400 font-medium mt-0.5">&darr; -8% vs yesterday</div>
+            </div>
+          </div>
+
+          <!-- Stage 5: Disburse to Carrier -->
+          <div onclick="openStageDrawer(5)" class="bg-meridian-900 p-4 rounded-xl border border-meridian-800 hover:border-cyan-500 cursor-pointer transition flex flex-col justify-between group">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-xs border border-emerald-500/40">5</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800">Healthy</span>
+              </div>
+              <div class="font-bold text-white text-sm">Disburse to Carrier</div>
+              <div class="text-[11px] text-slate-400">ACH / Wire</div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-meridian-800/80">
+              <div class="text-lg font-bold text-white font-mono">$3.3M</div>
+              <div class="text-[10px] text-slate-400">8,401 transactions</div>
+              <div class="text-[10px] text-emerald-400 font-medium mt-0.5">&uarr; +2% vs yesterday</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- MIDDLE ROW: DEPENDENCY FLOW, PROCESSING DEADLINE, AI INSIGHT (EXACT MATCH IMAGE 1) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- LEFT: Dependency Flow (5 Cols) -->
+          <div class="lg:col-span-5 bg-meridian-900 p-5 rounded-xl border border-meridian-800 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-meridian-800 mb-4">
+                <div>
+                  <h3 class="text-sm font-bold text-white">Dependency Flow</h3>
+                  <p class="text-[11px] text-slate-400">End-to-end view across systems and integrations</p>
+                </div>
+                <button onclick="navScreen('catalog')" class="text-xs text-cyan-400 hover:underline">View in Catalog &rarr;</button>
+              </div>
+
+              <!-- Integration Nodes Stepper -->
+              <div class="grid grid-cols-6 gap-2 text-center text-xs my-2">
+                
+                <div class="flex flex-col items-center">
+                  <div class="w-9 h-9 rounded-lg bg-rose-950/60 border border-rose-600 flex items-center justify-center text-rose-400 mb-1 pulse-danger">
+                    <i data-lucide="landmark" class="w-4 h-4"></i>
+                  </div>
+                  <span class="font-bold text-[10px] text-slate-200">Bank / Lockbox</span>
+                  <span class="text-[9px] text-rose-400 font-semibold">Format Changed</span>
+                </div>
+
+                <div class="flex flex-col items-center">
+                  <div class="w-9 h-9 rounded-lg bg-emerald-950/40 border border-emerald-600 flex items-center justify-center text-emerald-400 mb-1">
+                    <i data-lucide="hard-drive" class="w-4 h-4"></i>
+                  </div>
+                  <span class="font-bold text-[10px] text-slate-200">SFTP Service</span>
+                  <span class="text-[9px] text-emerald-400">Running</span>
+                </div>
+
+                <div class="flex flex-col items-center">
+                  <div class="w-9 h-9 rounded-lg bg-emerald-950/40 border border-emerald-600 flex items-center justify-center text-emerald-400 mb-1">
+                    <i data-lucide="network" class="w-4 h-4"></i>
+                  </div>
+                  <span class="font-bold text-[10px] text-slate-200">Integration</span>
+                  <span class="text-[9px] text-emerald-400">Running</span>
+                </div>
+
+                <div class="flex flex-col items-center">
+                  <div class="w-9 h-9 rounded-lg bg-emerald-950/40 border border-emerald-600 flex items-center justify-center text-emerald-400 mb-1">
+                    <i data-lucide="monitor" class="w-4 h-4"></i>
+                  </div>
+                  <span class="font-bold text-[10px] text-slate-200">Brokerage</span>
+                  <span class="text-[9px] text-emerald-400">Running</span>
+                </div>
+
+                <div class="flex flex-col items-center">
+                  <div class="w-9 h-9 rounded-lg bg-emerald-950/40 border border-emerald-600 flex items-center justify-center text-emerald-400 mb-1">
+                    <i data-lucide="database" class="w-4 h-4"></i>
+                  </div>
+                  <span class="font-bold text-[10px] text-slate-200">Database</span>
+                  <span class="text-[9px] text-emerald-400">Healthy</span>
+                </div>
+
+                <div class="flex flex-col items-center">
+                  <div class="w-9 h-9 rounded-lg bg-emerald-950/40 border border-emerald-600 flex items-center justify-center text-emerald-400 mb-1">
+                    <i data-lucide="wallet" class="w-4 h-4"></i>
+                  </div>
+                  <span class="font-bold text-[10px] text-slate-200">Finance App</span>
+                  <span class="text-[9px] text-emerald-400">Healthy</span>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Root Cause & Downstream Boxes -->
+            <div class="grid grid-cols-2 gap-3 mt-4 text-xs">
+              <div class="p-3 rounded-lg bg-rose-950/30 border border-rose-900/60">
+                <span class="text-[10px] uppercase font-bold text-rose-400 flex items-center">
+                  <i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i> Root Cause
+                </span>
+                <p class="text-slate-300 text-[11px] mt-1 leading-snug">
+                  Lockbox file format does not match expected structure. <strong class="text-rose-300 font-mono">Payer reference</strong> field changed.
+                </p>
+              </div>
+
+              <div class="p-3 rounded-lg bg-cyan-950/30 border border-cyan-900/60">
+                <span class="text-[10px] uppercase font-bold text-cyan-400 flex items-center">
+                  <i data-lucide="arrow-down-right" class="w-3 h-3 mr-1"></i> Downstream Impact
+                </span>
+                <p class="text-slate-300 text-[11px] mt-1 leading-snug">
+                  Payment matching is failing, leading to unapplied cash and risking the nightly processing deadline.
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- MIDDLE: Processing Deadline Card (3 Cols) -->
+          <div class="lg:col-span-3 bg-meridian-900 p-5 rounded-xl border border-meridian-800 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-meridian-800 mb-3">
+                <h3 class="text-sm font-bold text-white">Processing Deadline</h3>
+                <span class="text-xs text-cyan-400">View SLA details &rarr;</span>
+              </div>
+
+              <div class="flex items-center space-x-3 my-2">
+                <div class="w-10 h-10 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/40 pulse-danger shrink-0">
+                  <i data-lucide="clock" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <div class="text-[11px] text-slate-400">Tonight's cash application deadline</div>
+                  <div class="text-2xl font-bold font-mono text-white" id="deadlineRemainingText">2h 10m</div>
+                  <div class="text-[10px] text-slate-400">Remaining (Today 20:30)</div>
+                </div>
+              </div>
+
+              <!-- Progress bar with deadline pin -->
+              <div class="mt-4 space-y-1">
+                <div class="relative w-full bg-slate-800 h-2.5 rounded-full overflow-visible">
+                  <div class="bg-cyan-500 h-2.5 rounded-full" style="width: 58%;"></div>
+                  <!-- Red target line pin -->
+                  <div class="absolute top-0 bottom-0 left-[75%] w-0.5 bg-rose-500 -mt-1 -mb-1 shadow">
+                    <span class="absolute -top-4 -left-2 text-[9px] font-bold text-rose-400">20:30</span>
+                  </div>
+                </div>
+                <div class="flex justify-between text-[10px] text-slate-500 font-mono pt-1">
+                  <span>18:00 File received</span>
+                  <span>Target: 20:30</span>
+                  <span>22:00 Cutoff</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 p-2.5 rounded-lg bg-rose-950/40 border border-rose-900/60 text-[11px] text-rose-300 flex items-center space-x-2">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400 shrink-0"></i>
+              <span>At current processing rate, the deadline may be missed.</span>
+            </div>
+          </div>
+
+          <!-- RIGHT: AI Insight Card (4 Cols) -->
+          <div class="lg:col-span-4 bg-meridian-900 p-5 rounded-xl border border-meridian-800 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-meridian-800 mb-3">
+                <div class="flex items-center space-x-2">
+                  <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                  <h3 class="text-sm font-bold text-white">AI Insight</h3>
+                </div>
+                <span class="text-[10px] px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800 font-medium">Powered by AI</span>
+              </div>
+
+              <div class="space-y-2 text-xs">
+                <div class="font-bold text-rose-400 flex items-center">
+                  <i data-lucide="alert-circle" class="w-4 h-4 mr-1.5 shrink-0"></i> Cash-to-Carrier is at risk
+                </div>
+                <p class="text-[11px] text-slate-300 leading-relaxed">
+                  The lockbox file received at 17:58 has a changed payer reference field. Payment matching has dropped to 61%, resulting in $1.1M of unapplied cash. If not resolved, tonight's processing deadline may be missed.
+                </p>
+
+                <!-- Key Attributes -->
+                <div class="space-y-1 pt-1 text-[11px] border-t border-meridian-800/60">
+                  <div class="flex justify-between"><span class="text-slate-400">Confidence:</span> <strong class="text-white">High (99.4%)</strong></div>
+                  <div class="flex justify-between"><span class="text-slate-400">Cause type:</span> <strong class="text-white">Technical (Data / Integration)</strong></div>
+                  <div class="flex justify-between"><span class="text-slate-400">Business impact:</span> <strong class="text-rose-400">High &bull; $1.1M at risk</strong></div>
+                  <div class="flex justify-between"><span class="text-slate-400">Affected steps:</span> <strong class="text-white">Apply Cash, Reconcile</strong></div>
+                  <div class="flex justify-between"><span class="text-slate-400">Recommended action:</span> <strong class="text-cyan-300">Update field mapping and reprocess file</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-2">
+              <button onclick="navScreen('workbench')" class="w-full py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition flex items-center justify-center shadow-lg shadow-blue-500/20">
+                View recommended action &rarr;
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- BOTTOM ROW: KEY METRICS, EVENT TIMELINE, OPEN ACTIONS (EXACT MATCH IMAGE 1) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Key Metrics Cards with Sparklines (4 Cols) -->
+          <div class="lg:col-span-4 bg-meridian-900 p-5 rounded-xl border border-meridian-800">
+            <div class="flex items-center justify-between pb-3 border-b border-meridian-800 mb-3">
+              <h3 class="text-sm font-bold text-white">Key Metrics</h3>
+              <span class="text-xs text-cyan-400">View more metrics &rarr;</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              
+              <!-- Metric 1: Match Rate -->
+              <div class="p-3 rounded-lg bg-meridian-850 border border-meridian-750">
+                <div class="text-2xl font-bold font-mono text-rose-400" id="kmMatchRate">61%</div>
+                <div class="text-[11px] text-slate-300">Payment match rate</div>
+                <div class="text-[10px] text-rose-400 font-medium">&darr; -18% vs target</div>
+                <!-- Sparkline SVG -->
+                <svg class="w-full h-5 mt-1 stroke-rose-500 fill-none" viewBox="0 0 100 20">
+                  <path d="M 0,5 L 25,6 L 50,4 L 75,7 L 100,18" stroke-width="2" />
+                </svg>
+              </div>
+
+              <!-- Metric 2: Unapplied Cash -->
+              <div class="p-3 rounded-lg bg-meridian-850 border border-meridian-750">
+                <div class="text-2xl font-bold font-mono text-rose-400" id="kmUnappliedCash">$1.1M</div>
+                <div class="text-[11px] text-slate-300">Unapplied cash</div>
+                <div class="text-[10px] text-rose-400 font-medium">&uarr; +220% spike</div>
+                <svg class="w-full h-5 mt-1 stroke-rose-500 fill-none" viewBox="0 0 100 20">
+                  <path d="M 0,18 L 25,17 L 50,16 L 75,10 L 100,3" stroke-width="2" />
+                </svg>
+              </div>
+
+              <!-- Metric 3: Unmatched Payments -->
+              <div class="p-3 rounded-lg bg-meridian-850 border border-meridian-750">
+                <div class="text-2xl font-bold font-mono text-rose-400" id="kmUnmatchedCount">3,561</div>
+                <div class="text-[11px] text-slate-300">Unmatched payments</div>
+                <div class="text-[10px] text-rose-400 font-medium">&uarr; +210% queued</div>
+                <svg class="w-full h-5 mt-1 stroke-rose-500 fill-none" viewBox="0 0 100 20">
+                  <path d="M 0,17 L 25,16 L 50,15 L 75,9 L 100,2" stroke-width="2" />
+                </svg>
+              </div>
+
+              <!-- Metric 4: System Availability -->
+              <div class="p-3 rounded-lg bg-meridian-850 border border-meridian-750">
+                <div class="text-2xl font-bold font-mono text-emerald-400">98%</div>
+                <div class="text-[11px] text-slate-300">System availability</div>
+                <div class="text-[10px] text-emerald-400 font-medium">&bull; 0% change (Healthy)</div>
+                <svg class="w-full h-5 mt-1 stroke-emerald-500 fill-none" viewBox="0 0 100 20">
+                  <path d="M 0,5 L 25,5 L 50,5 L 75,5 L 100,5" stroke-width="2" />
+                </svg>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Event Timeline (4 Cols) -->
+          <div class="lg:col-span-4 bg-meridian-900 p-5 rounded-xl border border-meridian-800">
+            <div class="flex items-center justify-between pb-3 border-b border-meridian-800 mb-3">
+              <h3 class="text-sm font-bold text-white">Event Timeline</h3>
+              <span class="text-xs text-cyan-400">View all events &rarr;</span>
+            </div>
+
+            <div class="space-y-2 text-xs border-l-2 border-meridian-800 pl-3">
+              
+              <div class="relative">
+                <div class="flex items-center space-x-2">
+                  <span class="w-2 h-2 rounded-full bg-slate-500 -ml-[17px]"></span>
+                  <span class="font-mono text-slate-400 text-[11px]">17:58</span>
+                  <span class="font-bold text-white">Lockbox file received</span>
+                </div>
+                <p class="text-[11px] text-slate-400">Lakeshore_payments_20250115.csv</p>
+              </div>
+
+              <div class="relative">
+                <div class="flex items-center space-x-2">
+                  <span class="w-2 h-2 rounded-full bg-rose-500 -ml-[17px] pulse-danger"></span>
+                  <span class="font-mono text-rose-400 text-[11px] font-bold">18:02</span>
+                  <span class="font-bold text-rose-300">File format validation failed</span>
+                </div>
+                <p class="text-[11px] text-slate-400">Payer reference field not recognised</p>
+              </div>
+
+              <div class="relative">
+                <div class="flex items-center space-x-2">
+                  <span class="w-2 h-2 rounded-full bg-rose-500 -ml-[17px]"></span>
+                  <span class="font-mono text-rose-400 text-[11px] font-bold">18:05</span>
+                  <span class="font-bold text-white">Payment matching rate dropped to 61%</span>
+                </div>
+                <p class="text-[11px] text-slate-400">Collapsed from 95% baseline</p>
+              </div>
+
+              <div class="relative">
+                <div class="flex items-center space-x-2">
+                  <span class="w-2 h-2 rounded-full bg-amber-500 -ml-[17px]"></span>
+                  <span class="font-mono text-amber-400 text-[11px] font-bold">18:10</span>
+                  <span class="font-bold text-white">Unapplied cash crossed $1.1M</span>
+                </div>
+              </div>
+
+              <div class="relative">
+                <div class="flex items-center space-x-2">
+                  <span class="w-2 h-2 rounded-full bg-amber-500 -ml-[17px]"></span>
+                  <span class="font-mono text-amber-400 text-[11px]">18:15</span>
+                  <span class="text-slate-300">Processing backlog increasing</span>
+                </div>
+              </div>
+
+              <div class="relative">
+                <div class="flex items-center space-x-2">
+                  <span class="w-2 h-2 rounded-full bg-rose-500 -ml-[17px] pulse-danger"></span>
+                  <span class="font-mono text-rose-400 text-[11px] font-bold">18:20</span>
+                  <span class="font-bold text-rose-400">Deadline at risk</span>
+                </div>
+                <p class="text-[11px] text-slate-400">Projected 2h 10m remaining</p>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Open Actions Card (4 Cols) -->
+          <div class="lg:col-span-4 bg-meridian-900 p-5 rounded-xl border border-meridian-800 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-meridian-800 mb-3">
+                <h3 class="text-sm font-bold text-white">Open Actions</h3>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-amber-950 text-amber-400 border border-amber-800 font-bold" id="openActionCountBadge">1 pending</span>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-meridian-850 border border-meridian-700/80 space-y-2 text-xs">
+                <div class="flex items-center justify-between">
+                  <span class="px-1.5 py-0.2 rounded bg-rose-600 text-white font-mono font-bold text-[10px]">P1</span>
+                  <span class="text-slate-400 text-[11px]">Due: Today 20:30</span>
+                </div>
+                <div class="font-bold text-white text-sm">Update lockbox file mapping and reprocess</div>
+                <p class="text-slate-300 text-[11px] leading-relaxed">
+                  Resolve the payer reference field change and reprocess today's file through the matching engine.
+                </p>
+                <div class="text-[11px] text-slate-400 pt-1">
+                  Owner: <span class="text-white font-medium">Integration Team</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center space-x-2 pt-4">
+              <button onclick="navScreen('workbench')" class="flex-1 py-2 rounded-lg bg-meridian-800 hover:bg-meridian-750 text-slate-200 text-xs font-semibold transition">
+                Review evidence
+              </button>
+              <button onclick="navScreen('workbench')" class="flex-1 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition shadow-lg shadow-blue-500/20">
+                Approve action
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- PORTFOLIO TABLE (FROM IMAGE 2) -->
+        <div class="bg-meridian-900 p-5 rounded-xl border border-meridian-800">
+          <div class="flex items-center justify-between pb-3 border-b border-meridian-800 mb-4">
+            <div>
+              <h3 class="text-sm font-bold text-white">Journey Portfolio & Health</h3>
+              <p class="text-xs text-slate-400">End-to-end visibility across core brokerage journeys</p>
+            </div>
+            <span class="text-xs text-slate-400">Filtered: All Agencies &bull; Last 24 hours</span>
+          </div>
+
+          <div class="overflow-x-auto text-xs">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-meridian-800 text-slate-400 font-semibold bg-meridian-950/40">
+                  <th class="p-2.5">Journey</th>
+                  <th class="p-2.5">Process Flow</th>
+                  <th class="p-2.5">Health</th>
+                  <th class="p-2.5">SLA</th>
+                  <th class="p-2.5 text-right">$ At Risk (24h)</th>
+                  <th class="p-2.5">Trend</th>
+                  <th class="p-2.5 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-meridian-800/60 text-slate-300">
+                
+                <!-- Cash-to-Carrier -->
+                <tr class="hover:bg-meridian-850 bg-rose-950/10 cursor-pointer" onclick="openStageDrawer(3)">
+                  <td class="p-2.5">
+                    <div class="font-bold text-white">Cash-to-Carrier</div>
+                    <div class="text-[10px] text-slate-400">From payment receipt to carrier disbursement</div>
+                  </td>
+                  <td class="p-2.5">
+                    <div class="flex items-center space-x-1">
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Receive"></span>
+                      <span class="w-4 h-0.5 bg-slate-700"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="Deposit"></span>
+                      <span class="w-4 h-0.5 bg-slate-700"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-rose-500 pulse-danger" title="Apply Cash (At Risk)"></span>
+                      <span class="w-4 h-0.5 bg-slate-700"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-amber-500" title="Reconcile (Degraded)"></span>
+                      <span class="w-4 h-0.5 bg-slate-700"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-slate-600" title="Disburse"></span>
+                    </div>
+                  </td>
+                  <td class="p-2.5 font-bold text-rose-400">!</td>
+                  <td class="p-2.5 font-mono text-rose-400 font-bold">61%</td>
+                  <td class="p-2.5 text-right font-mono font-bold text-rose-400">$1.1M</td>
+                  <td class="p-2.5 text-rose-400 font-bold">&darr;</td>
+                  <td class="p-2.5 text-right"><span class="px-2 py-0.5 rounded text-[10px] bg-rose-950 text-rose-300 border border-rose-800 font-bold">At Risk</span></td>
+                </tr>
+
+                <!-- Carrier Reconciliation -->
+                <tr class="hover:bg-meridian-850">
+                  <td class="p-2.5">
+                    <div class="font-medium text-white">Carrier Reconciliation</div>
+                    <div class="text-[10px] text-slate-400">From carrier statements to reconciliation</div>
+                  </td>
+                  <td class="p-2.5">
+                    <div class="flex items-center space-x-1">
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                      <span class="w-4 h-0.5 bg-slate-700"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                      <span class="w-4 h-0.5 bg-slate-700"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                      <span class="w-4 h-0.5 bg-slate-700"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    </div>
+                  </td>
+                  <td class="p-2.5 text-emerald-400">&check;</td>
+                  <td class="p-2.5 font-mono">97%</td>
+                  <td class="p-2.5 text-right font-mono text-amber-400">$0.3M</td>
+                  <td class="p-2.5 text-emerald-400">&rarr;</td>
+                  <td class="p-2.5 text-right"><span class="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800">Healthy</span></td>
+                </tr>
+
+                <!-- Commission Processing -->
+                <tr class="hover:bg-meridian-850">
+                  <td class="p-2.5">
+                    <div class="font-medium text-white">Commission Processing</div>
+                    <div class="text-[10px] text-slate-400">From transactions to commission payout</div>
+                  </td>
+                  <td class="p-2.5">
+                    <div class="flex items-center space-x-1">
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                      <span class="w-4 h-0.5 bg-slate-700"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                      <span class="w-4 h-0.5 bg-slate-700"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    </div>
+                  </td>
+                  <td class="p-2.5 text-emerald-400">&check;</td>
+                  <td class="p-2.5 font-mono">99%</td>
+                  <td class="p-2.5 text-right font-mono">$0</td>
+                  <td class="p-2.5 text-emerald-400">&rarr;</td>
+                  <td class="p-2.5 text-right"><span class="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800">Healthy</span></td>
+                </tr>
+
+                <!-- Policy Servicing -->
+                <tr class="hover:bg-meridian-850">
+                  <td class="p-2.5">
+                    <div class="font-medium text-white">Policy Servicing</div>
+                    <div class="text-[10px] text-slate-400">From policy changes to servicing</div>
+                  </td>
+                  <td class="p-2.5">
+                    <div class="flex items-center space-x-1">
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                      <span class="w-4 h-0.5 bg-slate-700"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    </div>
+                  </td>
+                  <td class="p-2.5 text-emerald-400">&check;</td>
+                  <td class="p-2.5 font-mono">98%</td>
+                  <td class="p-2.5 text-right font-mono">$0</td>
+                  <td class="p-2.5 text-emerald-400">&rarr;</td>
+                  <td class="p-2.5 text-right"><span class="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800">Healthy</span></td>
+                </tr>
+
+                <!-- Agency Onboarding (M&A) -->
+                <tr class="hover:bg-meridian-850 cursor-pointer" onclick="navScreen('onboarding')">
+                  <td class="p-2.5">
+                    <div class="font-medium text-white">Agency Onboarding (M&A)</div>
+                    <div class="text-[10px] text-slate-400">From acquisition to integration</div>
+                  </td>
+                  <td class="p-2.5">
+                    <div class="flex items-center space-x-1">
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                      <span class="w-4 h-0.5 bg-slate-700"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                      <span class="w-4 h-0.5 bg-slate-700"></span>
+                      <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                    </div>
+                  </td>
+                  <td class="p-2.5 text-amber-400">&sim;</td>
+                  <td class="p-2.5 font-mono">96%</td>
+                  <td class="p-2.5 text-right font-mono text-amber-400">$0.2M</td>
+                  <td class="p-2.5 text-amber-400">&rarr;</td>
+                  <td class="p-2.5 text-right"><span class="px-2 py-0.5 rounded text-[10px] bg-amber-950 text-amber-400 border border-amber-800">Integrating</span></td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- VIEW 2: OVERVIEW / COMMAND CENTER (EXACT MATCH IMAGE 3 & 4) -->
+      <!-- ======================================================== -->
+      <div id="screen-overview" class="hidden space-y-6">
+        
+        <!-- CHEVRON STAGES BAR (IMAGE 3 & 4) -->
+        <div class="bg-meridian-900 p-3 rounded-xl border border-meridian-800 overflow-x-auto text-[11px] font-medium">
+          <div class="min-w-[950px] flex items-center justify-between space-x-1">
+            <div class="flex items-center px-3 py-1 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-800/40">
+              <span class="font-bold mr-1">1</span> Acquire <span class="text-slate-400 text-[10px] ml-1">(Ingest)</span>
+            </div>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-600"></i>
+            <div class="flex items-center px-3 py-1 rounded bg-blue-950/60 text-blue-300 border border-blue-800/40">
+              <span class="font-bold mr-1">2</span> Catalogue <span class="text-slate-400 text-[10px] ml-1">(Map & Enrich)</span>
+            </div>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-600"></i>
+            <div class="flex items-center px-3 py-1 rounded bg-indigo-950/60 text-indigo-300 border border-indigo-800/40">
+              <span class="font-bold mr-1">3</span> Assess <span class="text-slate-400 text-[10px] ml-1">(Standards)</span>
+            </div>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-600"></i>
+            <div class="flex items-center px-3 py-1 rounded bg-amber-950/60 text-amber-300 border border-amber-800/40">
+              <span class="font-bold mr-1">4</span> Validate <span class="text-slate-400 text-[10px] ml-1">(Checks)</span>
+            </div>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-600"></i>
+            <div class="flex items-center px-3 py-1 rounded bg-purple-950/60 text-purple-300 border border-purple-800/40">
+              <span class="font-bold mr-1">5</span> Onboard <span class="text-slate-400 text-[10px] ml-1">(To Observability)</span>
+            </div>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-600"></i>
+            <div class="flex items-center px-3 py-1 rounded bg-rose-950/60 text-rose-300 border border-rose-800/40">
+              <span class="font-bold mr-1">6</span> Observe <span class="text-slate-400 text-[10px] ml-1">(Monitor & Detect)</span>
+            </div>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-600"></i>
+            <div class="flex items-center px-3 py-1 rounded bg-emerald-950/60 text-emerald-300 border border-emerald-800/40">
+              <span class="font-bold mr-1">7</span> Act <span class="text-slate-400 text-[10px] ml-1">(Guide & Recover)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOP 6 SUMMARY CARDS -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+          <div class="bg-meridian-900 p-3.5 rounded-xl border border-meridian-800">
+            <div class="flex justify-between text-slate-400 text-xs mb-1">
+              <span>Agencies</span>
+              <i data-lucide="building-2" class="w-4 h-4 text-cyan-400"></i>
+            </div>
+            <div class="text-2xl font-bold text-white">4 <span class="text-xs text-emerald-400 font-normal">+1 new</span></div>
+            <div class="text-[10px] text-slate-400 mt-1">3 healthy &bull; 1 integrating</div>
+          </div>
+
+          <div class="bg-meridian-900 p-3.5 rounded-xl border border-meridian-800">
+            <div class="flex justify-between text-slate-400 text-xs mb-1">
+              <span>Business Journeys</span>
+              <i data-lucide="route" class="w-4 h-4 text-blue-400"></i>
+            </div>
+            <div class="text-2xl font-bold text-white">6</div>
+            <div class="text-[10px] text-slate-400 mt-1">All monitored live</div>
+          </div>
+
+          <div class="bg-meridian-900 p-3.5 rounded-xl border border-meridian-800">
+            <div class="flex justify-between text-slate-400 text-xs mb-1">
+              <span>Overall Health</span>
+              <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+            <div class="text-2xl font-bold text-white">96%</div>
+            <div class="text-[10px] text-emerald-400 mt-1">&uarr; +2% vs last week</div>
+          </div>
+
+          <div class="bg-meridian-900 p-3.5 rounded-xl border border-meridian-800">
+            <div class="flex justify-between text-slate-400 text-xs mb-1">
+              <span>$ At Risk (24h)</span>
+              <i data-lucide="dollar-sign" class="w-4 h-4 text-rose-400"></i>
+            </div>
+            <div class="text-2xl font-bold text-rose-400 font-mono" id="overviewAtRiskVal">$1.1M</div>
+            <div class="text-[10px] text-slate-400 mt-1">Lakeshore Fiduciary Cash</div>
+          </div>
+
+          <div class="bg-meridian-900 p-3.5 rounded-xl border border-meridian-800">
+            <div class="flex justify-between text-slate-400 text-xs mb-1">
+              <span>SLA Compliance</span>
+              <i data-lucide="target" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+            <div class="text-2xl font-bold text-white font-mono">98%</div>
+            <div class="text-[10px] text-slate-400 mt-1">Target 95%</div>
+          </div>
+
+          <div class="bg-meridian-900 p-3.5 rounded-xl border border-meridian-800">
+            <div class="flex justify-between text-slate-400 text-xs mb-1">
+              <span>AI Insights</span>
+              <i data-lucide="sparkles" class="w-4 h-4 text-purple-400"></i>
+            </div>
+            <div class="text-2xl font-bold text-purple-300 font-mono">12</div>
+            <div class="text-[10px] text-slate-400 mt-1">Actions generated</div>
+          </div>
+        </div>
+
+        <!-- 3-COLUMNS: AGENCY HEALTH, JOURNEY HEALTH, LAKESHORE PROFILE -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Agency Health -->
+          <div class="bg-meridian-900 p-5 rounded-xl border border-meridian-800 space-y-3">
+            <h3 class="text-sm font-bold text-white">Agency Network Health</h3>
+            <div class="space-y-2 text-xs">
+              <div class="flex items-center justify-between p-2.5 rounded bg-meridian-850">
+                <div>
+                  <div class="font-bold text-white">Riverside Insurance</div>
+                  <div class="text-[10px] text-slate-400">Readiness: 94%</div>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800">Healthy &bull; Operational</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded bg-meridian-850">
+                <div>
+                  <div class="font-bold text-white">Pinecrest Brokerage</div>
+                  <div class="text-[10px] text-slate-400">Readiness: 91%</div>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800">Healthy &bull; Operational</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded bg-meridian-850">
+                <div>
+                  <div class="font-bold text-white">Summit Risk Partners</div>
+                  <div class="text-[10px] text-slate-400">Readiness: 88%</div>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800">Healthy &bull; Operational</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded bg-meridian-850 border border-rose-900/60 cursor-pointer" onclick="navScreen('onboarding')">
+                <div>
+                  <div class="font-bold text-rose-300 flex items-center">
+                    Lakeshore Insurance <span class="ml-1 text-[9px] px-1 py-0.2 rounded bg-blue-900 text-blue-300 font-normal">NEW</span>
+                  </div>
+                  <div class="text-[10px] text-slate-400">Readiness: 68% (Conditional)</div>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-rose-950 text-rose-300 border border-rose-800 font-bold">At Risk &bull; Integrating</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Business Journeys Health -->
+          <div class="bg-meridian-900 p-5 rounded-xl border border-meridian-800 space-y-3">
+            <h3 class="text-sm font-bold text-white">Business Journeys Health</h3>
+            <div class="space-y-2 text-xs">
+              <div class="flex items-center justify-between p-2.5 rounded bg-meridian-850 border border-rose-900/40 cursor-pointer" onclick="navScreen('journey')">
+                <span class="font-bold text-white flex items-center">
+                  <span class="w-2 h-2 rounded-full bg-rose-500 mr-2 pulse-danger"></span> Cash-to-Carrier
+                </span>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-rose-950 text-rose-300 border border-rose-800 font-bold">At Risk ($1.1M)</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded bg-meridian-850">
+                <span class="font-medium text-slate-200 flex items-center">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2"></span> Carrier Reconciliation
+                </span>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800">Healthy (97%)</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded bg-meridian-850">
+                <span class="font-medium text-slate-200 flex items-center">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2"></span> Commission Processing
+                </span>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800">Healthy (99%)</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded bg-meridian-850">
+                <span class="font-medium text-slate-200 flex items-center">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2"></span> Policy Servicing
+                </span>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800">Healthy (98%)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lakeshore Acquired Agency Card (Image 3) -->
+          <div class="bg-meridian-900 p-5 rounded-xl border border-meridian-800 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-bold text-white">Acquisition Focus</h3>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-blue-950 text-blue-300 border border-blue-800">Under Observability</span>
+              </div>
+
+              <div class="p-3.5 rounded-lg bg-meridian-850 border border-meridian-750 space-y-2 text-xs">
+                <div class="flex items-center space-x-2">
+                  <i data-lucide="map-pin" class="w-4 h-4 text-cyan-400"></i>
+                  <div>
+                    <strong class="text-white">Lakeshore Insurance</strong>
+                    <div class="text-[10px] text-slate-400">Regional brokerage &bull; Acquired Jan 2025 &bull; Chicago, IL</div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-4 gap-2 text-center text-xs pt-2 border-t border-meridian-800 font-mono">
+                  <div class="bg-meridian-900 p-1.5 rounded">
+                    <span class="text-slate-400 text-[10px]">Apps</span>
+                    <div class="font-bold text-white">6</div>
+                  </div>
+                  <div class="bg-meridian-900 p-1.5 rounded">
+                    <span class="text-slate-400 text-[10px]">Feeds</span>
+                    <div class="font-bold text-white">4</div>
+                  </div>
+                  <div class="bg-meridian-900 p-1.5 rounded">
+                    <span class="text-slate-400 text-[10px]">Portals</span>
+                    <div class="font-bold text-white">4</div>
+                  </div>
+                  <div class="bg-meridian-900 p-1.5 rounded">
+                    <span class="text-slate-400 text-[10px]">Catalog</span>
+                    <div class="font-bold text-emerald-400">100%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-2">
+              <button onclick="navScreen('onboarding')" class="w-full py-2 rounded-lg bg-meridian-800 hover:bg-meridian-750 text-cyan-300 text-xs font-semibold transition">
+                View Readiness Assessment (68%) &rarr;
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- VIEW 3: M&A READINESS ASSESSMENT (EXACT MATCH IMAGE 5) -->
+      <!-- ======================================================== -->
+      <div id="screen-onboarding" class="hidden space-y-6">
+        
+        <!-- STEPPER WIZARD (IMAGE 5) -->
+        <div class="bg-meridian-900 p-4 rounded-xl border border-meridian-800">
+          <div class="flex items-center justify-between max-w-4xl mx-auto text-xs">
+            <div class="flex items-center space-x-2 text-emerald-400 font-bold">
+              <span class="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center text-xs">&check;</span>
+              <span>1. Ingest Inventory</span>
+            </div>
+            <div class="h-0.5 w-12 bg-cyan-700"></div>
+            <div class="flex items-center space-x-2 text-cyan-400 font-bold">
+              <span class="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-500 flex items-center justify-center text-xs">2</span>
+              <span>2. Assess Readiness</span>
+            </div>
+            <div class="h-0.5 w-12 bg-slate-700"></div>
+            <div class="flex items-center space-x-2 text-slate-400">
+              <span class="w-6 h-6 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs">3</span>
+              <span>3. Resolve Gaps</span>
+            </div>
+            <div class="h-0.5 w-12 bg-slate-700"></div>
+            <div class="flex items-center space-x-2 text-slate-400">
+              <span class="w-6 h-6 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs">4</span>
+              <span>4. Review & Approve</span>
+            </div>
+            <div class="h-0.5 w-12 bg-slate-700"></div>
+            <div class="flex items-center space-x-2 text-slate-400">
+              <span class="w-6 h-6 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs">5</span>
+              <span>5. Onboard</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3-COLUMNS: AGENCY SUMMARY, 68% GAUGE, READINESS BY CATEGORY (IMAGE 5) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Agency Profile (4 Cols) -->
+          <div class="lg:col-span-4 bg-meridian-900 p-5 rounded-xl border border-meridian-800 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-meridian-800">
+              <h3 class="text-sm font-bold text-white">Lakeshore Insurance</h3>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-purple-950 text-purple-300 border border-purple-800">In Assessment</span>
+            </div>
+
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between"><span class="text-slate-400">Location:</span> <strong class="text-white">Chicago, IL</strong></div>
+              <div class="flex justify-between"><span class="text-slate-400">Employees:</span> <strong class="text-white">120</strong></div>
+              <div class="flex justify-between"><span class="text-slate-400">Lines of business:</span> <strong class="text-white">Commercial, Personal, Benefits</strong></div>
+              <div class="flex justify-between"><span class="text-slate-400">Target go-live:</span> <strong class="text-white">Day 30</strong></div>
+            </div>
+
+            <div class="p-3 rounded-lg bg-meridian-850 text-xs text-slate-300">
+              Acquisition onboarding benchmarked against Meridian Enterprise Standards.
+            </div>
+          </div>
+
+          <!-- Overall Readiness Radial Gauge (4 Cols) -->
+          <div class="lg:col-span-4 bg-meridian-900 p-5 rounded-xl border border-meridian-800 flex flex-col items-center justify-center text-center">
+            <span class="text-xs uppercase font-bold text-slate-400 tracking-wider">Overall Readiness Score</span>
+            
+            <!-- SVG Radial Gauge -->
+            <div class="relative w-36 h-36 my-3 flex items-center justify-center">
+              <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" stroke="#1e293b" stroke-width="8" fill="transparent"></circle>
+                <circle cx="50" cy="50" r="40" stroke="#f59e0b" stroke-width="8" stroke-dasharray="251.2" stroke-dashoffset="80.38" stroke-linecap="round" fill="transparent"></circle>
+              </svg>
+              <div class="absolute flex flex-col items-center">
+                <span class="text-3xl font-extrabold text-white">68%</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 uppercase">Conditional</span>
+              </div>
+            </div>
+
+            <p class="text-xs text-slate-400 px-4">
+              Core systems identified and mapped. Two critical gaps must be resolved before full onboarding.
+            </p>
+          </div>
+
+          <!-- Readiness by Category Bars (4 Cols) -->
+          <div class="lg:col-span-4 bg-meridian-900 p-5 rounded-xl border border-meridian-800 space-y-3">
+            <h3 class="text-sm font-bold text-white mb-2">Readiness by Category</h3>
+
+            <div class="space-y-2.5 text-xs">
+              <div>
+                <div class="flex justify-between mb-1">
+                  <span class="text-slate-300">Catalog completeness</span>
+                  <strong class="text-emerald-400 font-mono">85%</strong>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div class="bg-emerald-500 h-2 rounded-full" style="width: 85%;"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between mb-1">
+                  <span class="text-slate-300">Critical monitoring (Day 1)</span>
+                  <strong class="text-amber-400 font-mono">60%</strong>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div class="bg-amber-500 h-2 rounded-full" style="width: 60%;"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between mb-1">
+                  <span class="text-slate-300">Ownership & support</span>
+                  <strong class="text-emerald-400 font-mono">90%</strong>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div class="bg-emerald-500 h-2 rounded-full" style="width: 90%;"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between mb-1">
+                  <span class="text-slate-300">Business impact mapping</span>
+                  <strong class="text-amber-400 font-mono">50%</strong>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div class="bg-amber-500 h-2 rounded-full" style="width: 50%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- KEY GAPS TO RESOLVE & STANDARDS COMPLIANCE (IMAGE 5) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Key Gaps to Resolve (2) -->
+          <div class="bg-meridian-900 p-5 rounded-xl border border-meridian-800 space-y-3">
+            <div class="flex items-center justify-between pb-3 border-b border-meridian-800">
+              <h3 class="text-sm font-bold text-white flex items-center">
+                <i data-lucide="alert-octagon" class="w-4 h-4 mr-2 text-rose-400"></i> Key Gaps to Resolve (2)
+              </h3>
+              <span class="text-xs text-rose-400 font-bold">Action Required</span>
+            </div>
+
+            <!-- Gap 1: Lockbox Monitoring -->
+            <div class="p-3.5 rounded-lg bg-rose-950/20 border border-rose-900/60 space-y-1.5 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white">1. Lockbox feed monitoring incomplete</span>
+                <span class="px-1.5 py-0.2 rounded bg-rose-900 text-rose-200 text-[10px] font-bold">Critical</span>
+              </div>
+              <p class="text-slate-300 text-[11px]">
+                File-format validation and control-total checks not configured for the bank/lockbox feed.
+              </p>
+              <div class="text-[10px] text-slate-400 pt-1">
+                Asset: <span class="text-white font-mono">Lakeshore Lockbox Feed</span> &bull; Journey: <span class="text-cyan-400 font-medium">Cash-to-Carrier</span>
+              </div>
+            </div>
+
+            <!-- Gap 2: Carrier Portal -->
+            <div class="p-3.5 rounded-lg bg-amber-950/20 border border-amber-900/60 space-y-1.5 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white">2. Carrier portal monitoring missing</span>
+                <span class="px-1.5 py-0.2 rounded bg-amber-900 text-amber-200 text-[10px] font-bold">High</span>
+              </div>
+              <p class="text-slate-300 text-[11px]">
+                No credential-health check or availability monitoring for Carrier Portal B.
+              </p>
+              <div class="text-[10px] text-slate-400 pt-1">
+                Asset: <span class="text-white font-mono">Carrier Portal B</span> &bull; Journey: <span class="text-amber-400 font-medium">Carrier Reconciliation</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Recommendation Card (IMAGE 5) -->
+          <div class="bg-meridian-900 p-5 rounded-xl border border-meridian-800 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-meridian-800 mb-3">
+                <h3 class="text-sm font-bold text-white flex items-center">
+                  <i data-lucide="sparkles" class="w-4 h-4 mr-2 text-cyan-400"></i> AI Recommendation
+                </h3>
+                <span class="text-[10px] px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800 font-medium">Powered by AI</span>
+              </div>
+
+              <div class="space-y-3 text-xs">
+                <p class="text-slate-300 text-[11px] leading-relaxed">
+                  Lakeshore can be onboarded with conditions. All core systems are identified and mapped to business journeys. Resolve the two critical gaps to meet Day-1 observability standards and eliminate financial blindspots.
+                </p>
+
+                <div class="space-y-1 text-[11px] text-slate-300">
+                  <div class="font-bold text-white">Recommended next steps:</div>
+                  <div class="flex items-center space-x-2"><span class="w-4 h-4 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center text-[10px]">1</span><span>Configure file-format and control-total checks for lockbox feed</span></div>
+                  <div class="flex items-center space-x-2"><span class="w-4 h-4 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center text-[10px]">2</span><span>Enable credential-health monitoring for Carrier Portal B</span></div>
+                  <div class="flex items-center space-x-2"><span class="w-4 h-4 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center text-[10px]">3</span><span>Validate alerts and routing with agency owners</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-2">
+              <button onclick="navScreen('journey')" class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs shadow-lg shadow-blue-500/20 transition">
+                Proceed to Journey Monitoring &rarr;
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- VIEW 4: OBSERVABILITY CATALOG (EXACT MATCH IMAGE 4) -->
+      <!-- ======================================================== -->
+      <div id="screen-catalog" class="hidden space-y-6">
+        
+        <!-- TOP KPI STATS (IMAGE 4) -->
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-3.5">
+          <div class="bg-meridian-900 p-3.5 rounded-xl border border-meridian-800">
+            <span class="text-slate-400 text-xs">Total Assets</span>
+            <div class="text-2xl font-bold text-white font-mono">14</div>
+          </div>
+          <div class="bg-meridian-900 p-3.5 rounded-xl border border-meridian-800">
+            <span class="text-slate-400 text-xs">Applications</span>
+            <div class="text-2xl font-bold text-white font-mono">6</div>
+          </div>
+          <div class="bg-meridian-900 p-3.5 rounded-xl border border-meridian-800">
+            <span class="text-slate-400 text-xs">File Feeds / Integrations</span>
+            <div class="text-2xl font-bold text-white font-mono">4</div>
+          </div>
+          <div class="bg-meridian-900 p-3.5 rounded-xl border border-meridian-800">
+            <span class="text-slate-400 text-xs">External Portals</span>
+            <div class="text-2xl font-bold text-white font-mono">4</div>
+          </div>
+          <div class="bg-meridian-900 p-3.5 rounded-xl border border-meridian-800">
+            <span class="text-slate-400 text-xs">Cataloged</span>
+            <div class="text-2xl font-bold text-emerald-400 font-mono">100%</div>
+          </div>
+          <div class="bg-meridian-900 p-3.5 rounded-xl border border-meridian-800">
+            <span class="text-slate-400 text-xs">Standards Compliant</span>
+            <div class="text-2xl font-bold text-amber-400 font-mono">68%</div>
+          </div>
+        </div>
+
+        <!-- 2-COLUMNS: ASSET TABLE & SELECTED ASSET INSPECTOR (IMAGE 4) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Assets Table (7 Cols) -->
+          <div class="lg:col-span-7 bg-meridian-900 p-5 rounded-xl border border-meridian-800">
+            <div class="flex items-center justify-between pb-3 border-b border-meridian-800 mb-3">
+              <h3 class="text-sm font-bold text-white">Cataloged Assets (Lakeshore)</h3>
+              <span class="text-xs text-slate-400">Click a row to inspect</span>
+            </div>
+
+            <div class="overflow-x-auto text-xs">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-meridian-800 text-slate-400 bg-meridian-950/40">
+                    <th class="p-2.5">#</th>
+                    <th class="p-2.5">Asset Name</th>
+                    <th class="p-2.5">Type</th>
+                    <th class="p-2.5">Journey / Step</th>
+                    <th class="p-2.5">Owner</th>
+                    <th class="p-2.5">Criticality</th>
+                    <th class="p-2.5">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-meridian-800/60 font-mono text-[11px] text-slate-300">
+                  <tr class="hover:bg-meridian-850 cursor-pointer">
+                    <td class="p-2.5">1</td>
+                    <td class="p-2.5 font-bold text-white">Lakeshore AMS</td>
+                    <td class="p-2.5">Application</td>
+                    <td class="p-2.5">Policy Servicing</td>
+                    <td class="p-2.5">IT Operations</td>
+                    <td class="p-2.5 text-rose-400">High</td>
+                    <td class="p-2.5"><span class="px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">Compliant</span></td>
+                  </tr>
+                  <tr class="hover:bg-meridian-850 cursor-pointer">
+                    <td class="p-2.5">2</td>
+                    <td class="p-2.5 font-bold text-white">Brokerage Platform</td>
+                    <td class="p-2.5">Application</td>
+                    <td class="p-2.5">Cash-to-Carrier</td>
+                    <td class="p-2.5">IT Operations</td>
+                    <td class="p-2.5 text-rose-400">High</td>
+                    <td class="p-2.5"><span class="px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">Compliant</span></td>
+                  </tr>
+                  <!-- Selected Asset: Lockbox Feed -->
+                  <tr class="bg-meridian-800/80 border-l-4 border-rose-500 cursor-pointer">
+                    <td class="p-2.5">3</td>
+                    <td class="p-2.5 font-bold text-rose-300">Lockbox Feed</td>
+                    <td class="p-2.5">File Feed</td>
+                    <td class="p-2.5 text-cyan-300 font-bold">Cash-to-Carrier</td>
+                    <td class="p-2.5">Finance Ops</td>
+                    <td class="p-2.5 text-rose-400 font-bold">High</td>
+                    <td class="p-2.5"><span class="px-1.5 py-0.2 rounded bg-rose-950 text-rose-300 border border-rose-800 font-bold">Gap</span></td>
+                  </tr>
+                  <tr class="hover:bg-meridian-850 cursor-pointer">
+                    <td class="p-2.5">4</td>
+                    <td class="p-2.5 font-bold text-white">Bank Account</td>
+                    <td class="p-2.5">External Service</td>
+                    <td class="p-2.5">Cash-to-Carrier</td>
+                    <td class="p-2.5">Finance Ops</td>
+                    <td class="p-2.5 text-rose-400">High</td>
+                    <td class="p-2.5"><span class="px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">Compliant</span></td>
+                  </tr>
+                  <tr class="hover:bg-meridian-850 cursor-pointer">
+                    <td class="p-2.5">5</td>
+                    <td class="p-2.5 font-bold text-white">Carrier Portal A</td>
+                    <td class="p-2.5">External Portal</td>
+                    <td class="p-2.5">Carrier Recon</td>
+                    <td class="p-2.5">Operations</td>
+                    <td class="p-2.5 text-amber-400">Medium</td>
+                    <td class="p-2.5"><span class="px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">Compliant</span></td>
+                  </tr>
+                  <tr class="hover:bg-meridian-850 cursor-pointer">
+                    <td class="p-2.5">6</td>
+                    <td class="p-2.5 font-bold text-amber-300">Carrier Portal B</td>
+                    <td class="p-2.5">External Portal</td>
+                    <td class="p-2.5">Carrier Recon</td>
+                    <td class="p-2.5 text-amber-400 font-bold">Operations</td>
+                    <td class="p-2.5 text-rose-400">High</td>
+                    <td class="p-2.5"><span class="px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-800">Partial</span></td>
+                  </tr>
+                  <tr class="hover:bg-meridian-850 cursor-pointer">
+                    <td class="p-2.5">7</td>
+                    <td class="p-2.5 font-bold text-white">SFTP Service</td>
+                    <td class="p-2.5">Integration</td>
+                    <td class="p-2.5">Cash-to-Carrier</td>
+                    <td class="p-2.5">IT Operations</td>
+                    <td class="p-2.5 text-amber-400">Medium</td>
+                    <td class="p-2.5"><span class="px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">Compliant</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Selected Asset Inspector: Lockbox Feed (5 Cols) (IMAGE 4) -->
+          <div class="lg:col-span-5 bg-meridian-900 p-5 rounded-xl border border-meridian-800 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-meridian-800">
+              <div>
+                <div class="text-xs text-slate-400">File Feed &bull; Lakeshore Insurance</div>
+                <h3 class="text-base font-bold text-white mt-0.5">Lockbox Feed</h3>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-rose-950 text-rose-300 border border-rose-800 font-bold">Gap</span>
+            </div>
+
+            <!-- Coverage Bar -->
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-400">Monitoring Coverage</span>
+                <strong class="text-rose-400 font-mono">50%</strong>
+              </div>
+              <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div class="bg-rose-500 h-2 rounded-full" style="width: 50%;"></div>
+              </div>
+            </div>
+
+            <!-- Upstream / Downstream Flow (Image 4) -->
+            <div class="p-3 rounded-lg bg-meridian-850 border border-meridian-750 text-xs space-y-2">
+              <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Topology Path</span>
+              <div class="flex items-center justify-between font-mono text-[10px] text-slate-300">
+                <span>Bank/Lockbox</span> &rarr; <span>SFTP</span> &rarr; <span class="text-cyan-400 font-bold underline">Lockbox Feed</span> &rarr; <span>Finance App</span>
+              </div>
+            </div>
+
+            <!-- Monitoring Checks Table (Image 4) -->
+            <div>
+              <h4 class="text-xs font-bold text-white mb-2">Monitoring Checks</h4>
+              <div class="space-y-1.5 text-xs">
+                <div class="flex items-center justify-between p-2 rounded bg-meridian-850">
+                  <span class="text-slate-300">File arrival (on time)</span>
+                  <span class="text-emerald-400 font-bold text-[10px]">&check; Pass</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded bg-meridian-850">
+                  <span class="text-slate-300">Row count validation</span>
+                  <span class="text-emerald-400 font-bold text-[10px]">&check; Pass</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded bg-meridian-850">
+                  <span class="text-slate-300">Control total check</span>
+                  <span class="text-emerald-400 font-bold text-[10px]">&check; Pass</span>
+                </div>
+                <div class="flex items-center justify-between p-2 rounded bg-meridian-850 border border-rose-900/60 bg-rose-950/20">
+                  <span class="text-rose-200 font-semibold">File format validation</span>
+                  <span class="text-rose-400 font-bold text-[10px]">&cross; FAILED</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-2 flex space-x-2">
+              <button onclick="navScreen('journey')" class="flex-1 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold">
+                View in Journey
+              </button>
+              <button onclick="navScreen('workbench')" class="flex-1 py-2 rounded-lg bg-meridian-800 hover:bg-meridian-750 text-slate-200 text-xs font-semibold">
+                Remediate Field
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- VIEW 5: REMEDIATION & HITL APPROVAL WORKBENCH (REFERENCE HTML) -->
+      <!-- ======================================================== -->
+      <div id="screen-workbench" class="hidden space-y-6">
+        
+        <!-- APPROVAL PATH STEPPER (FROM Cash-to-Carrier Observability.html) -->
+        <div class="bg-meridian-900 p-5 rounded-xl border border-meridian-800">
+          <div class="flex items-center justify-between pb-3 border-b border-meridian-800 mb-4">
+            <div>
+              <h3 class="text-sm font-bold text-white">Remediation Approval Path</h3>
+              <p class="text-xs text-slate-400">Cash Specialist drafts remap &bull; Hub Operations Manager approves reprocess</p>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] bg-rose-950 text-rose-300 border border-rose-800 font-bold">INC-2041</span>
+          </div>
+
+          <!-- 5 Steps -->
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-3 text-xs">
+            <div id="wfStep1" class="p-3 rounded-lg border border-cyan-500 bg-cyan-950/20 flex flex-col justify-between">
+              <div>
+                <strong class="text-cyan-300 block">1. Draft</strong>
+                <span class="text-slate-400 text-[11px]">Map the field</span>
+              </div>
+              <span class="text-[10px] text-cyan-400 font-bold mt-2">Active</span>
+            </div>
+
+            <div id="wfStep2" class="p-3 rounded-lg border border-meridian-750 bg-meridian-850 flex flex-col justify-between">
+              <div>
+                <strong class="text-slate-400 block">2. Dry-run</strong>
+                <span class="text-slate-500 text-[11px]">Preview recovery</span>
+              </div>
+              <span id="wfStep2Status" class="text-[10px] text-slate-500 mt-2">Pending</span>
+            </div>
+
+            <div id="wfStep3" class="p-3 rounded-lg border border-meridian-750 bg-meridian-850 flex flex-col justify-between">
+              <div>
+                <strong class="text-slate-400 block">3. Submit</strong>
+                <span class="text-slate-500 text-[11px]">Cash Specialist</span>
+              </div>
+              <span id="wfStep3Status" class="text-[10px] text-slate-500 mt-2">Pending</span>
+            </div>
+
+            <div id="wfStep4" class="p-3 rounded-lg border border-meridian-750 bg-meridian-850 flex flex-col justify-between">
+              <div>
+                <strong class="text-slate-400 block">4. Approve</strong>
+                <span class="text-slate-500 text-[11px]">Hub Ops Manager</span>
+              </div>
+              <span id="wfStep4Status" class="text-[10px] text-slate-500 mt-2">Pending</span>
+            </div>
+
+            <div id="wfStep5" class="p-3 rounded-lg border border-meridian-750 bg-meridian-850 flex flex-col justify-between">
+              <div>
+                <strong class="text-slate-400 block">5. Restore</strong>
+                <span class="text-slate-500 text-[11px]">Journey to Healthy</span>
+              </div>
+              <span id="wfStep5Status" class="text-[10px] text-slate-500 mt-2">Pending</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2-COLUMNS: PAYLOAD DIFF PREVIEW & FIELD REMAPPING FORM -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- LEFT: Received CSV Headers Diff & Payload Preview (HTML Reference) -->
+          <div class="bg-meridian-900 p-5 rounded-xl border border-meridian-800 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-meridian-800">
+              <h3 class="text-sm font-bold text-white">Received CSV Headers vs Expected</h3>
+              <span class="font-mono text-[10px] text-slate-400">LKS-20251008-01</span>
+            </div>
+
+            <!-- Headers Table -->
+            <div class="overflow-x-auto text-xs">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-meridian-800 text-slate-400 bg-meridian-950/40 font-mono text-[11px]">
+                    <th class="p-2">#</th>
+                    <th class="p-2">Received Header</th>
+                    <th class="p-2">Expected Standard</th>
+                    <th class="p-2">Check</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-meridian-800/60 font-mono text-[11px]">
+                  <tr><td class="p-2 text-slate-500">1</td><td class="p-2">Lockbox_ID</td><td class="p-2">Lockbox_ID</td><td class="p-2 text-emerald-400 font-bold">&check; Match</td></tr>
+                  <tr><td class="p-2 text-slate-500">2</td><td class="p-2">Batch_Date</td><td class="p-2">Batch_Date</td><td class="p-2 text-emerald-400 font-bold">&check; Match</td></tr>
+                  <tr class="bg-rose-950/30 text-rose-300 font-bold">
+                    <td class="p-2 text-rose-400">3</td>
+                    <td class="p-2 text-rose-400 underline" id="receivedHeaderCol">Payer_Reference</td>
+                    <td class="p-2 text-white">Remitter_Reference</td>
+                    <td class="p-2 text-rose-400" id="headerCheckStatus">&cross; Missing Col</td>
+                  </tr>
+                  <tr><td class="p-2 text-slate-500">4</td><td class="p-2">Invoice_No</td><td class="p-2">Invoice_No</td><td class="p-2 text-emerald-400 font-bold">&check; Match</td></tr>
+                  <tr><td class="p-2 text-slate-500">5</td><td class="p-2">Check_Amount</td><td class="p-2">Check_Amount</td><td class="p-2 text-emerald-400 font-bold">&check; Match</td></tr>
+                  <tr><td class="p-2 text-slate-500">6</td><td class="p-2">Policy_No</td><td class="p-2">Policy_No</td><td class="p-2 text-emerald-400 font-bold">&check; Match</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Raw CSV Sample Rows -->
+            <div class="space-y-1.5 pt-2">
+              <span class="text-xs font-bold text-slate-300">Raw Batch Rows (First 3 of 280 Held)</span>
+              <pre class="bg-meridian-950 p-2.5 rounded border border-meridian-800 font-mono text-[10px] text-slate-300 overflow-x-auto">LKS-88241, 2025-10-08, <span class="text-rose-400 font-bold bg-rose-950 px-1 py-0.5 rounded">HOL-4471-A</span>, INV-40918, $1,850.00, PL-220981
+LKS-88242, 2025-10-08, <span class="text-rose-400 font-bold bg-rose-950 px-1 py-0.5 rounded">BRD-1120-C</span>, INV-40922, $2,210.50, PL-221347
+LKS-88243, 2025-10-08, <span class="text-rose-400 font-bold bg-rose-950 px-1 py-0.5 rounded">PRF-9082-B</span>, INV-40931, $975.00, PL-219044</pre>
+            </div>
+          </div>
+
+          <!-- RIGHT: Field Remap Tool & Dry-Run Simulation (HTML Reference) -->
+          <div class="bg-meridian-900 p-5 rounded-xl border border-meridian-800 space-y-4 flex flex-col justify-between">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between pb-3 border-b border-meridian-800">
+                <h3 class="text-sm font-bold text-white">Field Remapping Workbench</h3>
+                <span class="px-2 py-0.5 rounded text-[10px] bg-rose-950 text-rose-300 border border-rose-800 font-bold" id="remapIncidentTag">Incident Active</span>
+              </div>
+
+              <!-- Persona Role Hint Banner -->
+              <div id="roleHintBox" class="p-3 rounded-lg bg-blue-950/40 border border-blue-800/60 text-xs text-blue-200 flex items-start space-x-2">
+                <i data-lucide="info" class="w-4 h-4 text-cyan-400 shrink-0 mt-0.5"></i>
+                <div id="roleHintText">
+                  <strong>Role Guidance:</strong> Cash Specialists configure & dry-run the mapping. Hub Operations Managers review & approve.
+                </div>
+              </div>
+
+              <!-- Mapping Select -->
+              <div class="space-y-1.5 text-xs">
+                <label class="block font-bold text-slate-300">
+                  Map incoming <span class="font-mono text-rose-400">Payer_Reference</span> to Target Enterprise Field:
+                </label>
+                <select id="mapSelect" class="w-full bg-slate-900 border border-cyan-600/60 text-cyan-200 px-3 py-2 rounded-lg font-mono font-bold focus:outline-none">
+                  <option value="" disabled>Select target field...</option>
+                  <option value="Remitter_Reference" selected>Remitter_Reference (Account Ledger Key)</option>
+                  <option value="Invoice_No">Invoice_No</option>
+                  <option value="Policy_No">Policy_No</option>
+                  <option value="Memo">Memo (Ignore Column)</option>
+                </select>
+              </div>
+
+              <!-- Dry Run Button -->
+              <div>
+                <button id="btnRunDry" onclick="executeDryRun()" class="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs transition flex items-center shadow">
+                  <i data-lucide="play" class="w-3.5 h-3.5 mr-1.5"></i> Run Dry-Run (Sandbox Simulation)
+                </button>
+              </div>
+
+              <!-- Dry Run Results Box -->
+              <div id="dryRunOutcomeBox" class="hidden p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-700/60 space-y-2 text-xs">
+                <div class="flex items-center justify-between text-emerald-400 font-bold">
+                  <span class="flex items-center"><i data-lucide="check-circle" class="w-4 h-4 mr-1.5"></i> Dry-run passed &bull; Sandbox only</span>
+                  <span class="font-mono text-[10px] text-slate-400">184ms execution</span>
+                </div>
+                <p class="text-slate-300 text-[11px] leading-relaxed">
+                  Projected Recovery: <strong class="text-white">272 of 280 records resolved</strong>. Match Rate recovers to <strong class="text-emerald-400">98.4%</strong>. Unapplied Cash drops to <strong class="text-emerald-400">$9,440.00</strong>.
+                </p>
+                <div class="text-[10px] text-slate-400">
+                  8 records stay in manual review (partial remittances).
+                </div>
+              </div>
+            </div>
+
+            <!-- Two-Person Segregation of Duties Action Area -->
+            <div class="pt-4 border-t border-meridian-800 space-y-3">
+              <div id="sodEnforcementNotice" class="text-xs text-slate-400 flex items-center">
+                <i data-lucide="shield-check" class="w-4 h-4 mr-1.5 text-cyan-400"></i>
+                <span id="sodText">Segregation of duties active: Submitter cannot approve their own change.</span>
+              </div>
+
+              <div class="flex items-center justify-between gap-3">
+                <button onclick="navScreen('journey')" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+                  Cancel
+                </button>
+                <div class="flex items-center space-x-2">
+                  <button id="btnRejectAction" onclick="rejectRemapAction()" class="hidden px-4 py-2 rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800 text-xs font-semibold">
+                    Reject
+                  </button>
+                  <button id="btnPrimaryAction" onclick="handlePrimaryAction()" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-500/20 transition flex items-center">
+                    <i data-lucide="send" class="w-4 h-4 mr-1.5"></i> Submit for Manager Approval
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- RECOVERY PROGRESS MODAL (ANIMATED DURING APPROVE) -->
+        <div id="recoveryProgressCard" class="hidden bg-meridian-900 p-5 rounded-xl border border-cyan-500 space-y-3">
+          <div class="flex items-center justify-between text-xs font-bold text-cyan-400">
+            <span id="recoveryPhaseTitle">Applying Remap to Ingestion Catalog...</span>
+            <span id="recoveryPhasePct" class="font-mono">25%</span>
+          </div>
+          <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+            <div id="recoveryProgressBar" class="bg-gradient-to-r from-cyan-500 to-emerald-500 h-2.5 rounded-full transition-all duration-500" style="width: 25%;"></div>
+          </div>
+          <div class="grid grid-cols-4 gap-2 text-center text-[10px] font-mono text-slate-400 pt-1">
+            <div id="ph0" class="p-1 rounded bg-cyan-950/60 text-cyan-300">1. Applying Remap</div>
+            <div id="ph1" class="p-1 rounded">2. Reprocessing Batch</div>
+            <div id="ph2" class="p-1 rounded">3. Rebalancing Ledger</div>
+            <div id="ph3" class="p-1 rounded">4. Restored to GREEN</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- VIEW 6: INCIDENTS & RISKS (CAUSAL CHAIN & NOISE SUPPRESSION) -->
+      <!-- ======================================================== -->
+      <div id="screen-incident" class="hidden space-y-6">
+        
+        <!-- P1 INCIDENT BANNER -->
+        <div id="incidentP1Banner" class="bg-rose-950/30 border border-rose-600 rounded-xl p-5 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-start space-x-3">
+            <div class="w-10 h-10 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500 flex items-center justify-center shrink-0 pulse-danger">
+              <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="px-2 py-0.5 rounded bg-rose-600 text-white font-mono text-xs font-bold">INC-2041</span>
+                <span class="font-bold text-rose-300 text-base">Cash-to-Carrier SLA at Risk ($1.1M Unapplied)</span>
+              </div>
+              <p class="text-xs text-slate-300 mt-1">
+                Lakeshore changed lockbox header without catalog coordination. 280 records held, nightly ACH cutoff at risk.
+              </p>
+            </div>
+          </div>
+          <button onclick="navScreen('workbench')" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition">
+            Open Remediation Workbench &rarr;
+          </button>
+        </div>
+
+        <!-- CAUSAL CHAIN (FROM REFERENCE HTML) -->
+        <div class="bg-meridian-900 p-5 rounded-xl border border-meridian-800 space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-meridian-800">
+            <h3 class="text-sm font-bold text-white">Causal Correlation Chain</h3>
+            <span class="text-xs text-cyan-400">Confidence: 99.4%</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+            <div class="p-3.5 rounded-lg bg-meridian-850 border border-rose-900/60 space-y-1">
+              <span class="font-mono text-[10px] text-slate-400">EVT-00123 &bull; 17:58 EST</span>
+              <strong class="text-rose-300 block">1. File Schema Change</strong>
+              <p class="text-slate-400 text-[11px]">Header Payer_Reference replaces Remitter_Reference.</p>
+            </div>
+
+            <div class="p-3.5 rounded-lg bg-meridian-850 border border-rose-900/60 space-y-1">
+              <span class="font-mono text-[10px] text-slate-400">MET-00408 &bull; 18:05 EST</span>
+              <strong class="text-rose-300 block">2. Match Degradation</strong>
+              <p class="text-slate-400 text-[11px]">Matching rate dropped from 95% to 61%.</p>
+            </div>
+
+            <div class="p-3.5 rounded-lg bg-meridian-850 border border-amber-900/60 space-y-1">
+              <span class="font-mono text-[10px] text-slate-400">QUE-00280 &bull; 18:10 EST</span>
+              <strong class="text-amber-300 block">3. Backlog Accumulation</strong>
+              <p class="text-slate-400 text-[11px]">3,561 unmatched payments, $1.1M unapplied cash.</p>
+            </div>
+
+            <div class="p-3.5 rounded-lg bg-meridian-850 border border-rose-900/60 space-y-1">
+              <span class="font-mono text-[10px] text-slate-400">SLA-ACH-2030 &bull; 18:20 EST</span>
+              <strong class="text-rose-300 block">4. Cutoff Deadline Breach</strong>
+              <p class="text-slate-400 text-[11px]">Projected 2h 10m remaining; SLA margin -35m.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOISE SUPPRESSION & ALERT TRIAGE (FROM REFERENCE HTML) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-meridian-900 p-5 rounded-xl border border-meridian-800 space-y-3">
+            <h3 class="text-sm font-bold text-white">Noise Suppression Filter</h3>
+            <div class="p-3.5 rounded-lg bg-meridian-850 border border-slate-700/80 space-y-2 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px] font-bold">Suppressed Alert</span>
+                <span class="text-slate-500 font-mono text-[10px]">rpt-cluster-02</span>
+              </div>
+              <strong class="text-slate-200 block">Reporting Server CPU at 92%</strong>
+              <p class="text-slate-400 text-[11px]">
+                Technical Severity is Critical, but Business Impact is ZERO because this cluster feeds non-critical nightly summaries. De-escalated from incident queue.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-meridian-900 p-5 rounded-xl border border-meridian-800 space-y-3">
+            <h3 class="text-sm font-bold text-white">Alert Triage Ranking</h3>
+            <div class="overflow-x-auto text-xs">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-meridian-800 text-slate-400 font-mono text-[11px]">
+                    <th class="p-2">Alert</th>
+                    <th class="p-2">Tech Severity</th>
+                    <th class="p-2">Business Impact</th>
+                    <th class="p-2">Decision</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-meridian-800/60 font-mono text-[11px]">
+                  <tr><td class="p-2 font-bold text-white">Lockbox parser validation failed</td><td class="p-2 text-amber-400">Medium</td><td class="p-2 text-rose-400 font-bold">Critical</td><td class="p-2 text-rose-300 font-bold">Promoted to P1</td></tr>
+                  <tr><td class="p-2 text-slate-400">Reporting server CPU 92%</td><td class="p-2 text-rose-400 font-bold">Critical</td><td class="p-2 text-slate-500">Low</td><td class="p-2 text-slate-400">Suppressed</td></tr>
+                  <tr><td class="p-2 text-slate-400">Carrier portal latency +300ms</td><td class="p-2 text-cyan-400">Low</td><td class="p-2 text-slate-500">Low</td><td class="p-2 text-slate-400">Logged, no page</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- VIEW 7: IMMUTABLE AUDIT TRAIL (CRYPTOGRAPHIC SHA-256) -->
+      <!-- ======================================================== -->
+      <div id="screen-audit" class="hidden space-y-6">
+        
+        <div class="bg-meridian-900 p-5 rounded-xl border border-meridian-800 space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-meridian-800">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center">
+                <i data-lucide="scroll-text" class="w-4 h-4 mr-2 text-cyan-400"></i> Immutable Audit Trail & Decision Ledger
+              </h2>
+              <p class="text-xs text-slate-400">SHA-256 Cryptographically Hash-Chained &bull; Full Segregation of Duties Compliance</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="verifyAuditChain()" class="px-3 py-1.5 rounded-lg bg-meridian-850 hover:bg-meridian-800 border border-meridian-700 text-slate-200 text-xs font-semibold flex items-center">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 mr-1.5 text-cyan-400"></i> Verify Chain
+              </button>
+              <button onclick="tamperTestAudit()" class="px-3 py-1.5 rounded-lg bg-meridian-850 hover:bg-meridian-800 border border-meridian-700 text-slate-200 text-xs font-semibold" id="btnTamper">
+                Tamper Test
+              </button>
+              <button onclick="exportAuditJson()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center">
+                <i data-lucide="download" class="w-3.5 h-3.5 mr-1.5"></i> Export JSON
+              </button>
+            </div>
+          </div>
+
+          <!-- Chain Verification Banner -->
+          <div id="chainVerifyBanner" class="hidden p-3 rounded-lg text-xs font-semibold"></div>
+
+          <!-- Audit Table -->
+          <div class="overflow-x-auto text-xs">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-meridian-800 text-slate-400 bg-meridian-950/40 font-mono text-[11px]">
+                  <th class="p-2.5">#</th>
+                  <th class="p-2.5">Timestamp (EST)</th>
+                  <th class="p-2.5">Action Code</th>
+                  <th class="p-2.5">Actor (User ID)</th>
+                  <th class="p-2.5">Role</th>
+                  <th class="p-2.5">Status & Details</th>
+                  <th class="p-2.5">SHA-256 Hash</th>
+                </tr>
+              </thead>
+              <tbody id="auditTableRows" class="divide-y divide-meridian-800/60 font-mono text-[11px] text-slate-300">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- SLIDE-OUT RIGHT DRAWER (STAGE INSPECTION & AI COPILOT) -->
+  <!-- ======================================================== -->
+  <div id="drawerScrim" onclick="closeDrawer()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+  <aside id="sideDrawer" class="fixed top-0 right-0 bottom-0 w-full sm:w-[540px] bg-meridian-900 border-l border-meridian-800 shadow-2xl z-50 transform translate-x-full flex flex-col justify-between overflow-hidden">
+    
+    <!-- Drawer Header -->
+    <div class="p-5 border-b border-meridian-800 flex items-center justify-between shrink-0 bg-meridian-900/90">
+      <div>
+        <h3 class="text-base font-bold text-white" id="drawerTitle">Stage Inspection</h3>
+        <p class="text-xs text-slate-400" id="drawerSubtitle">Raw records and live telemetry</p>
+      </div>
+      <button onclick="closeDrawer()" class="p-1.5 rounded-lg bg-meridian-850 hover:bg-meridian-800 text-slate-400 hover:text-white transition">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- Drawer Body -->
+    <div class="flex-1 p-5 overflow-y-auto space-y-4" id="drawerBody">
+      <!-- Injected by JavaScript -->
+    </div>
+
+  </aside>
+
+  <!-- NOTIFICATION TOAST -->
+  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 border border-cyan-500 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 text-xs">
+    <i data-lucide="info" class="w-4 h-4 text-cyan-400 shrink-0"></i>
+    <span id="toastMessage">Action completed successfully.</span>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT STATE ENGINE & REACTIVE CONTROLLERS -->
+  <!-- ======================================================== -->
+  <script>
+    // -------------------------------------------------------------
+    // SHA-256 HASH ALGORITHM IN VANILLA JS (FOR CRYPTOGRAPHIC CHAIN)
+    // -------------------------------------------------------------
+    function sha256(str) {
+      const K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+      const bytes = new TextEncoder().encode(str);
+      const l = bytes.length, bitLen = l * 8;
+      const padLen = ((l + 9 + 63) >> 6) << 6;
+      const buf = new Uint8Array(padLen);
+      buf.set(bytes);
+      buf[l] = 0x80;
+      const dv = new DataView(buf.buffer);
+      dv.setUint32(padLen - 8, Math.floor(bitLen / 4294967296));
+      dv.setUint32(padLen - 4, bitLen >>> 0);
+      let H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+      const w = new Uint32Array(64);
+      function rr(x, n) { return (x >>> n) | (x << (32 - n)); }
+      for (let o = 0; o < padLen; o += 64) {
+        for (let i = 0; i < 16; i++) w[i] = dv.getUint32(o + i * 4);
+        for (let i = 16; i < 64; i++) {
+          const s0 = rr(w[i - 15], 7) ^ rr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+          const s1 = rr(w[i - 2], 17) ^ rr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+          w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+        }
+        let a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+        for (let i = 0; i < 64; i++) {
+          const S1 = rr(e, 6) ^ rr(e, 11) ^ rr(e, 25);
+          const ch = (e & f) ^ (~e & g);
+          const t1 = (h + S1 + ch + K[i] + w[i]) | 0;
+          const S0 = rr(a, 2) ^ rr(a, 13) ^ rr(a, 22);
+          const mj = (a & b) ^ (a & c) ^ (b & c);
+          const t2 = (S0 + mj) | 0;
+          h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+        }
+        H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+        H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+      }
+      return H.map(x => (x >>> 0).toString(16).padStart(8, '0')).join('');
+    }
+
+    // -------------------------------------------------------------
+    // STATE DATA & PERSONA MODELS
+    // -------------------------------------------------------------
+    const ROLES = {
+      ops: { label: 'Hub Ops Manager', name: 'Dana Whitfield', uid: 'U-2040', avatar: 'DW' },
+      cash: { label: 'Cash Specialist', name: 'Jordan Reyes', uid: 'U-3112', avatar: 'JR' },
+      cfo: { label: 'CFO / Finance Exec', name: 'Marcus Hale', uid: 'U-1001', avatar: 'MH' },
+      it: { label: 'IT Engineer', name: 'Wei Chen', uid: 'U-4207', avatar: 'WC' }
+    };
+
+    const DAYS = [
+      { key: 'Mon', date: 'Oct 06', match: 98.8, status: 'Healthy', kind: 'ok' },
+      { key: 'Tue', date: 'Oct 07', match: 99.1, status: 'Healthy', kind: 'ok' },
+      { key: 'Wed', date: 'Oct 08', match: 61.0, status: 'Anomaly', kind: 'crit' },
+      { key: 'Thu', date: 'Oct 09', match: 98.4, status: 'Recovered', kind: 'ok' },
+      { key: 'Fri', date: 'Oct 10', match: 97.9, status: 'Healthy', kind: 'ok' },
+      { key: 'Sat', date: 'Oct 11', match: 99.5, status: 'Weekend', kind: 'mute' },
+      { key: 'Sun', date: 'Oct 12', match: 100.0, status: 'Automated', kind: 'info' }
+    ];
+
+    const state = {
+      activeScreen: 'journey',
+      currentRole: 'ops',
+      selectedDay: 'Wed',
+      incidentStatus: 'active', // 'active' or 'resolved'
+      wfStatus: 'draft', // 'draft', 'dry_passed', 'submitted', 'executing', 'done'
+      dryRunDone: false,
+      tampered: false,
+      auditLogs: []
+    };
+
+    function chainStr(entry) {
+      return [entry.prev, entry.time, entry.code, entry.uid, entry.role, entry.desc].join('|');
+    }
+
+    function addAuditEntry(code, uid, role, desc) {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+      const prev = state.auditLogs.length ? state.auditLogs[state.auditLogs.length - 1].hash : 'GENESIS';
+      const entry = {
+        time: timeStr,
+        code: code,
+        uid: uid,
+        role: role,
+        desc: desc,
+        prev: prev,
+        hash: ''
+      };
+      entry.hash = sha256(chainStr(entry));
+      state.auditLogs.push(entry);
+      renderAuditTable();
+    }
+
+    function initAuditLog() {
+      state.auditLogs = [];
+      addAuditEntry('DETECT', 'VAL-ENGINE', 'System', 'Lockbox file rejected: header Payer_Reference unrecognised');
+      addAuditEntry('CORRELATE', 'AI-CORRELATOR', 'System', 'INC-2041 opened as P1: match rate dropped to 61%');
+      addAuditEntry('CORRELATE', 'AI-CORRELATOR', 'System', 'Suppressed rpt-cluster-02 CPU alarm (Business Impact: Low)');
+    }
+
+    // -------------------------------------------------------------
+    // NAVIGATION & SCREEN SWITCHING
+    // -------------------------------------------------------------
+    function navScreen(screenId) {
+      state.activeScreen = screenId;
+      const screens = ['overview', 'journey', 'onboarding', 'catalog', 'incident', 'workbench', 'audit'];
+      
+      screens.forEach(s => {
+        const el = document.getElementById('screen-' + s);
+        const navBtn = document.getElementById('nav-' + s);
+        if (el) el.classList.add('hidden');
+        if (navBtn) {
+          navBtn.classList.remove('bg-blue-600', 'text-white');
+          navBtn.classList.add('text-slate-300');
+        }
+      });
+
+      const currentEl = document.getElementById('screen-' + screenId);
+      const currentNav = document.getElementById('nav-' + screenId);
+      if (currentEl) currentEl.classList.remove('hidden');
+      if (currentNav) {
+        currentNav.classList.remove('text-slate-300');
+        currentNav.classList.add('bg-blue-600', 'text-white');
+      }
+
+      // Update titles
+      const titles = {
+        journey: { title: 'Cash-to-Carrier', sub: 'From payment receipt to carrier disbursement', bread: 'Cash-to-Carrier' },
+        overview: { title: 'Enterprise Business Observability', sub: 'From carrier portals to cash, commission and close', bread: 'Command Center' },
+        onboarding: { title: 'M&A Readiness Assessment', sub: 'Check acquired agency against enterprise standards before onboarding', bread: 'Agencies & M&A' },
+        catalog: { title: 'Observability Catalog', sub: 'A single source of truth for all applications, feeds, portals and dependencies', bread: 'Catalog' },
+        incident: { title: 'Incidents & Risk Correlation', sub: 'Business impact first. Technical noise second.', bread: 'Incidents' },
+        workbench: { title: 'Remediation Workbench', sub: 'Remap, dry-run, submit, approve. Two people, always.', bread: 'Remediation' },
+        audit: { title: 'Audit Trail Ledger', sub: 'Every action, hash-chained and tamper-evident', bread: 'Audit Ledger' }
+      };
+
+      if (titles[screenId]) {
+        document.getElementById('topTitle').innerText = titles[screenId].title;
+        document.getElementById('topSubtitle').innerText = '• ' + titles[screenId].sub;
+        document.getElementById('topBreadcrumb').innerText = titles[screenId].bread;
+      }
+
+      lucide.createIcons();
+    }
+
+    // -------------------------------------------------------------
+    // DAY STRIP RENDERING
+    // -------------------------------------------------------------
+    function renderDayStrip() {
+      const container = document.getElementById('dayStripContainer');
+      container.innerHTML = '';
+      DAYS.forEach(d => {
+        const btn = document.createElement('button');
+        const isActive = d.key === state.selectedDay;
+        const isCrit = d.key === 'Wed' && state.incidentStatus === 'active';
+        
+        let bgClass = isActive 
+          ? (isCrit ? 'bg-rose-600 text-white font-bold' : 'bg-blue-600 text-white font-bold')
+          : 'bg-meridian-850 text-slate-300 hover:bg-meridian-800';
+
+        btn.className = `px-2.5 py-1 rounded-md text-[11px] font-medium transition flex items-center space-x-1.5 ${bgClass}`;
+        btn.innerHTML = `
+          <span class="w-1.5 h-1.5 rounded-full ${isCrit ? 'bg-rose-300 pulse-danger' : (d.kind === 'ok' ? 'bg-emerald-400' : 'bg-slate-400')}"></span>
+          <span>${d.key} ${d.date.slice(4)}</span>
+          <span class="font-mono text-[10px] opacity-80">(${d.key === 'Wed' && state.incidentStatus === 'resolved' ? '98.4%' : d.match + '%'})</span>
+        `;
+        btn.onclick = () => selectDay(d.key);
+        container.appendChild(btn);
+      });
+    }
+
+    function selectDay(dayKey) {
+      state.selectedDay = dayKey;
+      renderDayStrip();
+      if (dayKey === 'Wed' && state.incidentStatus === 'active') {
+        showToast('Viewing Wednesday Anomaly snapshot');
+      } else {
+        showToast(`Loaded ${dayKey} historical snapshot`);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // PERSONA ROLE SWITCHING
+    // -------------------------------------------------------------
+    function switchRole(roleKey) {
+      state.currentRole = roleKey;
+      const role = ROLES[roleKey];
+      document.getElementById('roleAvatarPill').innerText = role.avatar;
+      updateWorkbenchRoleHints();
+      showToast(`Viewing as ${role.name} (${role.label})`);
+      lucide.createIcons();
+    }
+
+    function updateWorkbenchRoleHints() {
+      const r = state.currentRole;
+      const roleHint = document.getElementById('roleHintText');
+      const primaryBtn = document.getElementById('btnPrimaryAction');
+      const rejectBtn = document.getElementById('btnRejectAction');
+      const sodText = document.getElementById('sodText');
+
+      if (state.incidentStatus === 'resolved') {
+        primaryBtn.disabled = true;
+        primaryBtn.className = "px-5 py-2.5 rounded-lg bg-emerald-600 text-white font-bold text-xs cursor-default flex items-center";
+        primaryBtn.innerHTML = `<i data-lucide="check" class="w-4 h-4 mr-1.5"></i> Incident Resolved`;
+        return;
+      }
+
+      if (r === 'cash') {
+        roleHint.innerHTML = `<strong>Cash Specialist Lens:</strong> You configure the mapping and run the dry-run simulation. Segregation of duties requires you to submit the candidate to a Hub Operations Manager.`;
+        primaryBtn.innerHTML = `<i data-lucide="send" class="w-4 h-4 mr-1.5"></i> Submit for Manager Approval`;
+        primaryBtn.disabled = !state.dryRunDone;
+        primaryBtn.className = state.dryRunDone 
+          ? "px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-500/20 transition flex items-center"
+          : "px-5 py-2.5 rounded-lg bg-slate-800 text-slate-500 font-bold text-xs cursor-not-allowed flex items-center";
+        rejectBtn.classList.add('hidden');
+        sodText.innerText = state.wfStatus === 'submitted'
+          ? "Submitted! You cannot approve your own submission. Switch to Hub Operations Manager."
+          : "Segregation of duties: Cash Specialist cannot approve production general ledger commitments.";
+      } else if (r === 'ops') {
+        roleHint.innerHTML = `<strong>Hub Operations Manager Lens:</strong> You review the candidate submitted by the Cash Specialist. Verify dry-run recovery before clicking Approve.`;
+        rejectBtn.classList.remove('hidden');
+        if (state.wfStatus === 'submitted') {
+          primaryBtn.disabled = false;
+          primaryBtn.innerHTML = `<i data-lucide="shield-check" class="w-4 h-4 mr-1.5"></i> Approve Action & Reprocess Batch`;
+          primaryBtn.className = "px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 transition flex items-center";
+          sodText.innerText = "Candidate ready for your review and production approval.";
+        } else {
+          primaryBtn.disabled = true;
+          primaryBtn.innerHTML = `<i data-lucide="clock" class="w-4 h-4 mr-1.5"></i> Awaiting Cash Specialist Submission`;
+          primaryBtn.className = "px-5 py-2.5 rounded-lg bg-slate-800 text-slate-500 font-bold text-xs cursor-not-allowed flex items-center";
+          sodText.innerText = "Waiting for Jordan Reyes (Cash Specialist) to test dry-run and submit.";
+        }
+      } else {
+        roleHint.innerHTML = `<strong>${ROLES[r].label} Lens:</strong> Read-only mode for this workbench. Action belongs to Operations.`;
+        primaryBtn.disabled = true;
+        primaryBtn.className = "px-5 py-2.5 rounded-lg bg-slate-800 text-slate-500 font-bold text-xs cursor-not-allowed flex items-center";
+        primaryBtn.innerHTML = `<i data-lucide="lock" class="w-4 h-4 mr-1.5"></i> Operations Authorization Required`;
+        rejectBtn.classList.add('hidden');
+      }
+      lucide.createIcons();
+    }
+
+    // -------------------------------------------------------------
+    // REMEDIATION WORKBENCH FLOW (EXACT STEP-BY-STEP RECOVERY)
+    // -------------------------------------------------------------
+    function executeDryRun() {
+      const btn = document.getElementById('btnRunDry');
+      btn.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 mr-1.5 animate-spin"></i> Testing in Sandbox...`;
+      
+      setTimeout(() => {
+        state.dryRunDone = true;
+        state.wfStatus = 'dry_passed';
+        btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 mr-1.5 text-emerald-400"></i> Dry-Run Validated`;
+        
+        // Show dry-run results box
+        document.getElementById('dryRunOutcomeBox').classList.remove('hidden');
+        
+        // Update Step 2 in approval stepper
+        const step2 = document.getElementById('wfStep2');
+        step2.className = "p-3 rounded-lg border border-emerald-500 bg-emerald-950/20 flex flex-col justify-between";
+        step2.querySelector('strong').className = "text-emerald-300 block";
+        document.getElementById('wfStep2Status').innerText = "Passed (98.4%)";
+        document.getElementById('wfStep2Status').className = "text-[10px] text-emerald-400 font-bold mt-2";
+
+        // Update Step 3
+        const step3 = document.getElementById('wfStep3');
+        step3.className = "p-3 rounded-lg border border-cyan-500 bg-cyan-950/20 flex flex-col justify-between";
+        step3.querySelector('strong').className = "text-cyan-300 block";
+        document.getElementById('wfStep3Status').innerText = "Ready to Submit";
+        document.getElementById('wfStep3Status').className = "text-[10px] text-cyan-400 font-bold mt-2";
+
+        addAuditEntry('REMAP_DRAFT', ROLES[state.currentRole].uid, ROLES[state.currentRole].label, 'Dry-run passed: Payer_Reference -> Remitter_Reference');
+        updateWorkbenchRoleHints();
+        showToast('Dry-run completed! 272 of 280 records resolved.');
+      }, 700);
+    }
+
+    function handlePrimaryAction() {
+      if (state.currentRole === 'cash') {
+        // Submit for Manager Approval
+        state.wfStatus = 'submitted';
+        const step3 = document.getElementById('wfStep3');
+        step3.className = "p-3 rounded-lg border border-emerald-500 bg-emerald-950/20 flex flex-col justify-between";
+        step3.querySelector('strong').className = "text-emerald-300 block";
+        document.getElementById('wfStep3Status').innerText = "Submitted";
+        document.getElementById('wfStep3Status').className = "text-[10px] text-emerald-400 font-bold mt-2";
+
+        const step4 = document.getElementById('wfStep4');
+        step4.className = "p-3 rounded-lg border border-cyan-500 bg-cyan-950/20 flex flex-col justify-between";
+        step4.querySelector('strong').className = "text-cyan-300 block";
+        document.getElementById('wfStep4Status').innerText = "Awaiting Ops Mgr";
+        document.getElementById('wfStep4Status').className = "text-[10px] text-cyan-400 font-bold mt-2";
+
+        addAuditEntry('REMAP_SUBMITTED', ROLES.cash.uid, ROLES.cash.label, 'Submitted remap candidate to Dana Whitfield (Ops Manager)');
+        updateWorkbenchRoleHints();
+        showToast('Submitted candidate! Please switch role to Hub Operations Manager to approve.');
+      } else if (state.currentRole === 'ops' && state.wfStatus === 'submitted') {
+        // Hub Operations Manager Approves & Executes
+        executeRecoverySequence();
+      }
+    }
+
+    function rejectRemapAction() {
+      state.wfStatus = 'draft';
+      state.dryRunDone = false;
+      document.getElementById('dryRunOutcomeBox').classList.add('hidden');
+      addAuditEntry('MANAGER_REJECTION', ROLES.ops.uid, ROLES.ops.label, 'Remap rejected by Manager; returned to Cash Specialist');
+      updateWorkbenchRoleHints();
+      showToast('Remap rejected and returned to Cash Specialist.');
+    }
+
+    function executeRecoverySequence() {
+      state.wfStatus = 'executing';
+      const progressCard = document.getElementById('recoveryProgressCard');
+      progressCard.classList.remove('hidden');
+      
+      const bar = document.getElementById('recoveryProgressBar');
+      const title = document.getElementById('recoveryPhaseTitle');
+      const pct = document.getElementById('recoveryPhasePct');
+
+      addAuditEntry('MANAGER_APPROVAL', ROLES.ops.uid, ROLES.ops.label, 'Approved remap candidate submitted by U-3112');
+      
+      // Phase 0: 25%
+      bar.style.width = '25%';
+      title.innerText = '1/4 Applying Remap to Ingestion Catalog...';
+      pct.innerText = '25%';
+      document.getElementById('ph0').className = "p-1 rounded bg-cyan-950 text-cyan-300 font-bold";
+
+      setTimeout(() => {
+        // Phase 1: 55%
+        bar.style.width = '55%';
+        title.innerText = '2/4 Reprocessing Batch LKS-20251008-01 (280 records)...';
+        pct.innerText = '55%';
+        document.getElementById('ph1').className = "p-1 rounded bg-cyan-950 text-cyan-300 font-bold";
+        addAuditEntry('BATCH_REPLAY', 'SVC-PARSER', 'System', 'Replaying batch LKS-20251008-01 with Remitter_Reference alias');
+      }, 1000);
+
+      setTimeout(() => {
+        // Phase 2: 85%
+        bar.style.width = '85%';
+        title.innerText = '3/4 Rebalancing Fiduciary Carrier Accounts Payable...';
+        pct.innerText = '85%';
+        document.getElementById('ph2').className = "p-1 rounded bg-cyan-950 text-cyan-300 font-bold";
+      }, 2000);
+
+      setTimeout(() => {
+        // Phase 3: 100% Complete!
+        bar.style.width = '100%';
+        title.innerText = '4/4 Restored to GREEN! Cutoff margin protected (+1h 15m)';
+        pct.innerText = '100%';
+        document.getElementById('ph3').className = "p-1 rounded bg-emerald-950 text-emerald-300 font-bold";
+        
+        state.incidentStatus = 'resolved';
+        state.wfStatus = 'done';
+        addAuditEntry('RESTORE', 'SYSTEM-MONITOR', 'System', 'Cash-to-Carrier restored to GREEN; SLA margin +1h 15m');
+
+        // Update All UI Elements across the dashboard to Healthy!
+        restoreDashboardToHealthy();
+        updateWorkbenchRoleHints();
+        showToast('Batch successfully reprocessed! Cash-to-Carrier is now HEALTHY.');
+      }, 3000);
+    }
+
+    function restoreDashboardToHealthy() {
+      // Top Nav & Stepper
+      document.getElementById('navJourneyBadge').className = "px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500 text-white";
+      document.getElementById('navJourneyBadge').innerText = "✓";
+      document.getElementById('navIncidentBadge').className = "px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white";
+      document.getElementById('navIncidentBadge').innerText = "OK";
+      document.getElementById('navWfBadge').className = "px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800";
+      document.getElementById('navWfBadge').innerText = "Done";
+
+      // Journey Stage 3 Card
+      const card3 = document.getElementById('cardStage3');
+      card3.className = "bg-meridian-900 p-4 rounded-xl border border-emerald-500 hover:border-emerald-400 cursor-pointer transition flex flex-col justify-between group";
+      document.getElementById('badgeNumStage3').className = "w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-xs border border-emerald-500/40";
+      document.getElementById('badgeNumStage3').classList.remove('pulse-danger');
+      document.getElementById('badgeStatusStage3').className = "px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800";
+      document.getElementById('badgeStatusStage3').innerText = "Healthy";
+      document.getElementById('stage3AppliedVal').innerText = "$4.59M";
+      document.getElementById('stage3MatchPct').innerText = "(98.4% match rate)";
+      document.getElementById('stage3UnappliedVal').className = "text-[11px] font-bold text-emerald-400";
+      document.getElementById('stage3UnappliedVal').innerText = "$9,440 unapplied cash";
+      document.getElementById('stage3UnmatchedItems').innerText = "8 items in manual review";
+
+      // Journey Stage 4 Card
+      document.getElementById('badgeStatusStage4').className = "px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800";
+      document.getElementById('badgeStatusStage4').innerText = "Healthy";
+
+      // Key Metrics
+      document.getElementById('kmMatchRate').innerText = "98.4%";
+      document.getElementById('kmMatchRate').className = "text-2xl font-bold font-mono text-emerald-400";
+      document.getElementById('kmUnappliedCash').innerText = "$9.4K";
+      document.getElementById('kmUnappliedCash').className = "text-2xl font-bold font-mono text-emerald-400";
+      document.getElementById('kmUnmatchedCount').innerText = "8";
+      document.getElementById('kmUnmatchedCount').className = "text-2xl font-bold font-mono text-emerald-400";
+
+      // Open Actions Badge
+      document.getElementById('openActionCountBadge').innerText = "0 pending";
+      document.getElementById('openActionCountBadge').className = "text-xs px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold";
+
+      // Workbench step 5
+      const step5 = document.getElementById('wfStep5');
+      step5.className = "p-3 rounded-lg border border-emerald-500 bg-emerald-950/20 flex flex-col justify-between";
+      step5.querySelector('strong').className = "text-emerald-300 block";
+      document.getElementById('wfStep5Status').innerText = "Restored to GREEN";
+      document.getElementById('wfStep5Status').className = "text-[10px] text-emerald-400 font-bold mt-2";
+      document.getElementById('remapIncidentTag').innerText = "Resolved";
+      document.getElementById('remapIncidentTag').className = "px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800 font-bold";
+
+      renderDayStrip();
+    }
+
+    function replaySimulation() {
+      state.incidentStatus = 'active';
+      state.wfStatus = 'draft';
+      state.dryRunDone = false;
+      document.getElementById('dryRunOutcomeBox').classList.add('hidden');
+      document.getElementById('recoveryProgressCard').classList.add('hidden');
+      initAuditLog();
+      navScreen('journey');
+      
+      // Reset card 3 to red
+      const card3 = document.getElementById('cardStage3');
+      card3.className = "bg-meridian-900 p-4 rounded-xl border border-rose-600 bg-rose-950/10 hover:border-rose-400 cursor-pointer transition flex flex-col justify-between group relative overflow-hidden";
+      document.getElementById('badgeNumStage3').className = "w-7 h-7 rounded-full bg-rose-500 text-white font-bold flex items-center justify-center text-xs shadow-md shadow-rose-500/40 pulse-danger";
+      document.getElementById('badgeStatusStage3').className = "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800";
+      document.getElementById('badgeStatusStage3').innerText = "At Risk";
+      document.getElementById('stage3AppliedVal').innerText = "$3.5M";
+      document.getElementById('stage3MatchPct').innerText = "(61% match rate)";
+      document.getElementById('stage3UnappliedVal').className = "text-[11px] font-bold text-rose-400";
+      document.getElementById('stage3UnappliedVal').innerText = "$1.1M unapplied cash";
+      document.getElementById('stage3UnmatchedItems').innerText = "3,561 transactions • ↑ +220%";
+
+      // Reset metrics
+      document.getElementById('kmMatchRate').innerText = "61%";
+      document.getElementById('kmMatchRate').className = "text-2xl font-bold font-mono text-rose-400";
+      document.getElementById('kmUnappliedCash').innerText = "$1.1M";
+      document.getElementById('kmUnappliedCash').className = "text-2xl font-bold font-mono text-rose-400";
+      document.getElementById('kmUnmatchedCount').innerText = "3,561";
+      document.getElementById('kmUnmatchedCount').className = "text-2xl font-bold font-mono text-rose-400";
+
+      document.getElementById('openActionCountBadge').innerText = "1 pending";
+      document.getElementById('openActionCountBadge').className = "text-xs px-2 py-0.5 rounded-full bg-amber-950 text-amber-400 border border-amber-800 font-bold";
+
+      renderDayStrip();
+      updateWorkbenchRoleHints();
+      showToast('Replayed Wednesday Schema Drift Anomaly (Active P1)');
+    }
+
+    // -------------------------------------------------------------
+    // SLIDE-OUT RIGHT DRAWER CONTROLLERS
+    // -------------------------------------------------------------
+    function openDrawer(title, subtitle, contentHtml) {
+      document.getElementById('drawerTitle').innerText = title;
+      document.getElementById('drawerSubtitle').innerText = subtitle;
+      document.getElementById('drawerBody').innerHTML = contentHtml;
+      
+      const scrim = document.getElementById('drawerScrim');
+      const drawer = document.getElementById('sideDrawer');
+      scrim.classList.remove('opacity-0', 'pointer-events-none');
+      scrim.classList.add('opacity-100');
+      drawer.classList.remove('translate-x-full');
+      lucide.createIcons();
+    }
+
+    function closeDrawer() {
+      const scrim = document.getElementById('drawerScrim');
+      const drawer = document.getElementById('sideDrawer');
+      scrim.classList.remove('opacity-100');
+      scrim.classList.add('opacity-0', 'pointer-events-none');
+      drawer.classList.add('translate-x-full');
+    }
+
+    function openStageDrawer(stageNum) {
+      const stageNames = ['', 'Receive Payment', 'Deposit to Trust', 'Apply Cash', 'Reconcile', 'Disburse to Carrier'];
+      let html = '';
+
+      if (stageNum === 3) {
+        html = `
+          <div class="p-3.5 rounded-xl bg-rose-950/20 border border-rose-900/60 space-y-1 text-xs">
+            <div class="flex justify-between font-bold text-rose-400">
+              <span>Status: File Validation Failed</span>
+              <span>3,561 Unmatched Items</span>
+            </div>
+            <p class="text-slate-300 text-[11px]">
+              Missing required key <code class="text-cyan-300 bg-slate-900 px-1 py-0.5 rounded">Remitter_Reference</code>. Found unmapped header <code class="text-rose-400 bg-slate-900 px-1 py-0.5 rounded">Payer_Reference</code>.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="text-xs font-bold text-white mb-2">Raw Transaction Rows (Held in Exception Queue)</h4>
+            <div class="overflow-x-auto text-xs">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-meridian-800 text-slate-400 font-mono text-[10px]">
+                    <th class="p-1.5">Payer Ref</th>
+                    <th class="p-1.5">Customer</th>
+                    <th class="p-1.5">Amount</th>
+                    <th class="p-1.5">Result</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-meridian-800/60 font-mono text-[11px] text-slate-300">
+                  <tr><td class="p-1.5 text-rose-400">HOL-4471-A</td><td class="p-1.5">Hollis Logistics</td><td class="p-1.5 font-bold">$1,850.00</td><td class="p-1.5 text-rose-400">Unmatched</td></tr>
+                  <tr><td class="p-1.5 text-rose-400">BRD-1120-C</td><td class="p-1.5">Brandt Dental</td><td class="p-1.5 font-bold">$2,210.50</td><td class="p-1.5 text-rose-400">Unmatched</td></tr>
+                  <tr><td class="p-1.5 text-rose-400">PRF-9082-B</td><td class="p-1.5">Pacific Rim Freight</td><td class="p-1.5 font-bold">$975.00</td><td class="p-1.5 text-rose-400">Unmatched</td></tr>
+                  <tr><td class="p-1.5 text-rose-400">OAK-3317-D</td><td class="p-1.5">Oakline Hospitality</td><td class="p-1.5 font-bold">$1,420.75</td><td class="p-1.5 text-rose-400">Unmatched</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-meridian-800">
+            <button onclick="closeDrawer(); navScreen('workbench');" class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition flex items-center justify-center">
+              <i data-lucide="sliders" class="w-4 h-4 mr-2"></i> Launch Remediation Workbench
+            </button>
+          </div>
+        `;
+      } else {
+        html = `
+          <div class="p-3.5 rounded-xl bg-emerald-950/20 border border-emerald-900/60 space-y-1 text-xs">
+            <div class="flex justify-between font-bold text-emerald-400">
+              <span>Status: Nominal / Balanced</span>
+              <span>Zero Defects</span>
+            </div>
+            <p class="text-slate-300 text-[11px]">
+              All control balances verified against fiduciary bank statements.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="text-xs font-bold text-white mb-2">Sample Reconciled Transactions</h4>
+            <div class="overflow-x-auto text-xs">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-meridian-800 text-slate-400 font-mono text-[10px]">
+                    <th class="p-1.5">Payment ID</th>
+                    <th class="p-1.5">Bank Ref</th>
+                    <th class="p-1.5">Amount</th>
+                    <th class="p-1.5">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-meridian-800/60 font-mono text-[11px] text-slate-300">
+                  <tr><td class="p-1.5">PAY-9901</td><td class="p-1.5">FID-8812</td><td class="p-1.5">$12,500.00</td><td class="p-1.5 text-emerald-400">Balanced</td></tr>
+                  <tr><td class="p-1.5">PAY-9902</td><td class="p-1.5">FID-8813</td><td class="p-1.5">$4,200.00</td><td class="p-1.5 text-emerald-400">Balanced</td></tr>
+                  <tr><td class="p-1.5">PAY-9903</td><td class="p-1.5">FID-8814</td><td class="p-1.5">$18,350.00</td><td class="p-1.5 text-emerald-400">Balanced</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+
+      openDrawer(`Stage ${stageNum}: ${stageNames[stageNum]}`, `Inspection details for Wednesday processing cycle`, html);
+    }
+
+    function openCopilotDrawer() {
+      const html = `
+        <div class="space-y-4 text-xs">
+          <div class="p-3.5 rounded-xl bg-blue-950/40 border border-blue-800/60 space-y-2">
+            <span class="text-[10px] uppercase font-bold text-cyan-400">Active Persona Grounding</span>
+            <strong class="text-white block text-sm">Lakeshore Cash-to-Carrier Anomaly</strong>
+            <p class="text-slate-300 leading-relaxed text-[11px]">
+              Lockbox bank file arrived with an unexpected header <code class="text-rose-400 font-mono">Payer_Reference</code>. Automated matching dropped to 61%, trapping $1.1M in unapplied cash.
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <span class="font-bold text-white block">Suggested Persona Queries:</span>
+            <div class="flex flex-col space-y-1.5">
+              <button onclick="askCopilotQ('What is the financial exposure for the CFO?')" class="p-2.5 rounded-lg bg-meridian-850 hover:bg-meridian-800 text-left text-slate-300 border border-meridian-750 transition">
+                💰 "What is the financial fiduciary exposure for the CFO?"
+              </button>
+              <button onclick="askCopilotQ('How does the two-person approval work?')" class="p-2.5 rounded-lg bg-meridian-850 hover:bg-meridian-800 text-left text-slate-300 border border-meridian-750 transition">
+                ⚖️ "How does segregation of duties enforce two-person approval?"
+              </button>
+              <button onclick="askCopilotQ('What is the technical root cause?')" class="p-2.5 rounded-lg bg-meridian-850 hover:bg-meridian-800 text-left text-slate-300 border border-meridian-750 transition">
+                🔍 "What is the technical schema mismatch code?"
+              </button>
+            </div>
+          </div>
+
+          <div id="copilotAnswerArea" class="hidden p-3.5 rounded-xl bg-meridian-950 border border-cyan-800/60 space-y-2">
+            <span class="font-bold text-cyan-400 flex items-center">
+              <i data-lucide="bot" class="w-3.5 h-3.5 mr-1.5"></i> Meridian Copilot Answer
+            </span>
+            <p id="copilotAnswerText" class="text-slate-300 text-[11px] leading-relaxed"></p>
+          </div>
+
+          <div class="pt-3">
+            <button onclick="closeDrawer(); navScreen('workbench');" class="w-full py-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs transition">
+              Open Remediation Action Workbench &rarr;
+            </button>
+          </div>
+        </div>
+      `;
+      openDrawer('Meridian AI Copilot', 'Evidence-grounded conversational insights', html);
+    }
+
+    function askCopilotQ(question) {
+      const answerArea = document.getElementById('copilotAnswerArea');
+      const answerText = document.getElementById('copilotAnswerText');
+      answerArea.classList.remove('hidden');
+
+      if (question.includes('exposure')) {
+        answerText.innerHTML = `<strong>Financial Risk Analysis:</strong> $1.1M in customer premium funds is unapplied. Funds are safely deposited in the fiduciary bank account, but carriers have not been credited. Cutoff deadline is 20:30 tonight. If unresolved, carriers may levy late-remittance penalties estimated at $12.4K.`;
+      } else if (question.includes('two-person') || question.includes('approval')) {
+        answerText.innerHTML = `<strong>Segregation of Duties Enforcement:</strong> Cash Application Specialist (Jordan Reyes) configures the mapping alias and runs sandbox dry-runs. The candidate must be submitted to the Hub Operations Manager (Dana Whitfield) for final sign-off. The submitter cannot approve their own change.`;
+      } else {
+        answerText.innerHTML = `<strong>Technical Root Cause:</strong> Ingestion validation failed with code <code class="text-rose-400">VAL-LKS-HEADER-04</code>. Column 3 header arrived as <code>Payer_Reference</code> instead of expected <code>Remitter_Reference</code>. The SFTP transport and network servers remain 100% healthy.`;
+      }
+      lucide.createIcons();
+    }
+
+    // -------------------------------------------------------------
+    // AUDIT TRAIL LEDGER RENDERING & VERIFICATION
+    // -------------------------------------------------------------
+    function renderAuditTable() {
+      const tbody = document.getElementById('auditTableRows');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      state.auditLogs.slice().reverse().forEach((log, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-meridian-850";
+        tr.innerHTML = `
+          <td class="p-2.5 text-slate-500">${state.auditLogs.length - idx}</td>
+          <td class="p-2.5 text-slate-300 font-mono">${log.time} EST</td>
+          <td class="p-2.5 font-bold text-cyan-300">${log.code}</td>
+          <td class="p-2.5 text-white">${log.uid}</td>
+          <td class="p-2.5 text-slate-400">${log.role}</td>
+          <td class="p-2.5 font-sans text-slate-300">${log.desc}</td>
+          <td class="p-2.5 text-slate-500 font-mono text-[10px]" title="${log.hash}">SHA-256: ${log.hash.slice(0, 10)}...</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function verifyAuditChain() {
+      let prev = 'GENESIS';
+      let isValid = true;
+      let failedIdx = -1;
+
+      for (let i = 0; i < state.auditLogs.length; i++) {
+        const entry = state.auditLogs[i];
+        if (entry.prev !== prev || sha256(chainStr(entry)) !== entry.hash) {
+          isValid = false;
+          failedIdx = i + 1;
+          break;
+        }
+        prev = entry.hash;
+      }
+
+      const banner = document.getElementById('chainVerifyBanner');
+      banner.classList.remove('hidden');
+      if (isValid) {
+        banner.className = "p-3 rounded-lg bg-emerald-950/60 border border-emerald-600 text-emerald-300 text-xs font-semibold flex items-center";
+        banner.innerHTML = `<i data-lucide="shield-check" class="w-4 h-4 mr-2 text-emerald-400"></i> Chain Verified: All ${state.auditLogs.length} ledger entries mathematically verified with zero tampering.`;
+      } else {
+        banner.className = "p-3 rounded-lg bg-rose-950/60 border border-rose-600 text-rose-300 text-xs font-semibold flex items-center";
+        banner.innerHTML = `<i data-lucide="alert-octagon" class="w-4 h-4 mr-2 text-rose-400"></i> Cryptographic Proof Failed: Tampering detected at entry #${failedIdx}! Hash mismatch.`;
+      }
+      lucide.createIcons();
+    }
+
+    function tamperTestAudit() {
+      const banner = document.getElementById('chainVerifyBanner');
+      if (!state.tampered && state.auditLogs.length > 1) {
+        state.origDesc = state.auditLogs[1].desc;
+        state.auditLogs[1].desc = state.origDesc + ' [TAMPERED_UNAUTHORIZED_MUTATION]';
+        state.tampered = true;
+        document.getElementById('btnTamper').innerText = 'Undo Tamper';
+        showToast('Injected unauthorized mutation into Ledger Entry #2.');
+      } else if (state.tampered) {
+        state.auditLogs[1].desc = state.origDesc;
+        state.tampered = false;
+        document.getElementById('btnTamper').innerText = 'Tamper Test';
+        showToast('Restored authentic ledger record.');
+      }
+      renderAuditTable();
+      verifyAuditChain();
+    }
+
+    function exportAuditJson() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.auditLogs, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `Meridian_Audit_Ledger_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast('Downloaded cryptographically chained ledger package.');
+    }
+
+    function handleAgencyFilter(val) {
+      showToast(`Filtered view by Agency: ${val.toUpperCase()}`);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      const text = document.getElementById('toastMessage');
+      text.innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2600);
+    }
+
+    // -------------------------------------------------------------
+    // INITIALIZATION ON PAGE LOAD
+    // -------------------------------------------------------------
+    window.addEventListener('DOMContentLoaded', () => {
+      initAuditLog();
+      renderDayStrip();
+      switchRole('ops');
+      navScreen('journey');
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

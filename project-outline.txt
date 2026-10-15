@@ -1,0 +1,692 @@
+Imagine our fictional insurance brokerage has acquired another smaller brokerage called Lakeshore Insurance.
+
+Lakeshore comes with its own applications, bank feeds, external carrier portals, files, support owners and processes.
+
+Before connecting Lakeshore into our enterprise, we need answers to three fundamental questions:
+
+1. What did we acquire?
+ What applications, feeds, external dependencies and business processes does Lakeshore have?
+
+2. Is it ready to integrate?
+ Does it meet our enterprise standards? Are ownership, monitoring, dependencies and business processes defined?
+
+3. Once integrated, is the business actually operating correctly?
+ We don't just want to know that servers and applications are UP. We need to know whether critical business journeys are working.
+
+That's what we're building.
+
+Then draw this:
+
+Plain Text
+NEW ACQUISITION
+│
+▼
+What did we acquire?
+│
+▼
+OBSERVABILITY CATALOG
+│
+▼
+Does it meet our standards?
+│
+▼
+READINESS ASSESSMENT
+│
+▼
+Onboard
+│
+▼
+BUSINESS OBSERVABILITY
+│
+▼
+Is the business flowing correctly?
+│
+▼
+Detect Risk
+│
+▼
+Explain Why
+│
+▼
+Recommend Action
+│
+▼
+Human Approval
+│
+▼
+Recover
+
+That is the entire hackathon.
+
+Part 1: About the business
+
+Cash-to-Carrier
+
+The simplified insurance money journey
+
+Imagine a customer has to pay an insurance premium.
+
+At a high level:
+
+Plain Text
+CUSTOMER
+│
+│ Premium payment
+▼
+BANK / PAYMENT CHANNEL
+│
+▼
+BROKERAGE
+│
+├── Receives payment information
+├── Deposits / recognizes the money
+├── Matches the money
+├── Reconciles what is owed
+│
+▼
+INSURANCE CARRIER
+
+The hackathon brief itself uses receipt → fiduciary deposit → cash application → carrier reconciliation → disbursement as its anchor Cash-to-Carrier journey.
+
+For our prototype we simplify this into five steps:
+
+Plain Text
+1. RECEIVE PAYMENT
+↓
+2. DEPOSIT
+↓
+3. APPLY CASH
+↓
+4. RECONCILE
+↓
+5. DISBURSE TO CARRIER
+Part 2: What "Apply Cash" means
+
+This is probably the most important domain concept.
+
+"Receiving money and knowing what the money belongs to are two different things."
+
+Imagine:
+
+Plain Text
+Received: $10,000
+
+The brokerage needs to understand:
+
+Plain Text
+Who paid this?
+ 
+Which customer/account?
+ 
+What does this payment relate to?
+ 
+How much should be applied?
+
+If everything matches:
+
+Plain Text
+Received $10,000
+Applied $10,000
+ 
+Unapplied $0
+
+Good.
+
+But suppose the information required to identify the payment isn't understood:
+
+Plain Text
+Received $10,000
+Applied $6,000
+ 
+Unapplied $4,000
+
+That remaining $4,000 represents unapplied cash in our synthetic scenario.
+
+The business now has a problem even though its servers might be perfectly healthy.
+
+Part 3: What the bank/lockbox file represents
+
+Say:
+
+"For our simulation, we're going to receive a synthetic file containing payment information."
+
+For example:
+
+Plain Text
+Payment_ID
+Customer_Reference
+Agency
+Amount
+Payment_Date
+Remitter_Reference
+
+Our fictional brokerage expects that structure.
+
+Then something changes.
+
+Expected:
+
+Plain Text
+Payment_ID
+Customer_Reference
+Amount
+Remitter_Reference
+
+But Lakeshore sends:
+
+Plain Text
+Payment_ID
+Customer_Reference
+Amount
+Payer_Reference
+
+Now look at what happens:
+
+Plain Text
+FILE RECEIVED
+│
+▼
+Server GREEN
+│
+Application GREEN
+│
+Network GREEN
+│
+File transport GREEN
+│
+▼
+But schema validation RED
+│
+▼
+Matching deteriorates
+│
+▼
+Unapplied cash increases
+│
+▼
+Processing deadline at risk
+│
+▼
+CASH-TO-CARRIER RED
+This is the heart of our solution.
+
+"Normal monitoring asks whether technology is running. We're trying to determine whether the business is running."
+
+The challenge document makes this same distinction: an individual system can appear available while a critical business deadline is nevertheless at risk.
+
+Part 4: Where the acquisition story fits
+
+Now come back to Lakeshore.
+
+Lakeshore arrives with an inventory like this:
+
+Asset	Type	Why we careLegacy Brokerage System	Application	Supports agency operations
+Brokerage Platform	Application	Participates in business processes
+Bank Feed	Feed	Provides financial information
+Lockbox Feed	Feed	Provides payment information
+Carrier Portal A	External dependency	Carrier interaction
+Carrier Portal B	External dependency	Carrier interaction
+File Transfer	Integration	Transports files
+
+It's synthetic data. The challenge requires synthetic data for the prototype.
+
+We are pretending this is what we discovered about the newly acquired company.
+
+Part 5: What the Catalog does
+
+"Your catalog is basically our enterprise dictionary."
+
+For everything we discover, we're trying to capture:
+
+Plain Text
+What is it?
+↓
+Who owns it?
+↓
+What business journey uses it?
+↓
+What depends on it?
+↓
+How critical is it?
+↓
+How do we monitor it?
+↓
+What happens if it fails?
+
+The source solution similarly proposes cataloging identity/ownership, hosting type, tier/SLA, business mappings, dependencies, business impact, observability method and lifecycle.
+
+So one record might conceptually look like:
+
+Plain Text
+Name
+Lakeshore Bank Feed
+ 
+Type
+External Feed
+ 
+Agency
+Lakeshore
+ 
+Business Journey
+Cash-to-Carrier
+ 
+Business Step
+Receive Payment
+ 
+Owner
+Finance Operations
+ 
+Criticality
+High
+ 
+Expected behaviour
+File received before processing deadline
+ 
+Monitoring
+Arrival + format + row count + control total
+ 
+Impact if unavailable
+Cash application may be delayed
+Part 6: Now the standards check
+
+The next question is:
+
+"Can Lakeshore be integrated safely?"
+
+We compare Lakeshore's inventory with our fictional standard.
+
+For example:
+
+Plain Text
+EXPECTED LAKESHORE
+ 
+Application registered ✓ ✓
+Owner identified ✓ ✓
+Business journey mapped ✓ ✓
+Dependencies identified ✓ ✓
+Feed monitoring ✓ ✓
+File-format validation ✓ ✕
+Portal monitoring ✓ ✕
+Impact mapped ✓ △
+
+From this we calculate a synthetic readiness score.
+
+Example:
+
+68% READY
+
+Status:
+
+CONDITIONAL
+
+Important: tell the team the percentage is our demonstration logic, not a real customer metric.
+
+The purpose is to show executives:
+
+"We don't just discover what came with the acquisition. We immediately show what's missing before it is fully onboarded."
+
+Your existing solution approach explicitly includes acquisition onboarding and visibility into missing applications, feeds, portals, ownership, controls and catalog entries.
+
+Part 7: Put Lakeshore into the Business Observability Portal
+
+Now the team presses:
+
+"Onboard to Business Observability"
+
+The Executive Portal becomes:
+
+Plain Text
+ENTERPRISE BUSINESS HEALTH
+────────────────────────────────────
+ 
+Agencies
+ 
+Riverside ● Healthy
+Pinecrest ● Healthy
+Summit ● Healthy
+Lakeshore ● Monitoring NEW
+ 
+ 
+BUSINESS JOURNEYS
+ 
+Cash-to-Carrier ● Healthy
+Carrier Reconciliation ● Healthy
+Commission Processing ● Healthy
+Benefits Servicing ● Healthy
+
+This is where the M&A portal and observability portal become one platform, rather than separate applications.
+
+Part 8: Now inject the problem
+
+This is where the demo really begins.
+
+Have a hidden/admin button:
+
+"Inject malformed payment file"
+
+The backend generates the synthetic events.
+
+Plain Text
+6:00 PM
+File Received
+↓
+6:02 PM
+File Format Validation Failed
+↓
+6:05 PM
+Payment Matching Starts Falling
+↓
+6:10 PM
+Cash Application Backlog Increasing
+↓
+6:12 PM
+Processing Deadline At Risk
+
+Now your dashboard changes:
+
+Plain Text
+Cash-to-Carrier
+ 
+Receive Payment 🟢
+↓
+Deposit 🟢
+↓
+Apply Cash 🔴
+↓
+Reconcile 🟠
+↓
+Carrier Disbursement 🟢
+
+No APIs to an actual customer system are necessary for the prototype.
+
+Everything comes from synthetic events.
+
+Part 9: Show them what correlation means
+
+Imagine the prototype produces these signals:
+
+Plain Text
+Signal 1:
+File structure unexpected
+ 
+Signal 2:
+Matching rate decreasing
+ 
+Signal 3:
+Unapplied cash increasing
+ 
+Signal 4:
+Processing backlog increasing
+ 
+Signal 5:
+Processing deadline approaching
+
+Individually, these are just signals.
+
+Your correlation engine recognizes:
+
+Plain Text
+File format changed
+│
+▼
+Matching deteriorated
+│
+▼
+Unapplied cash increased
+│
+▼
+Backlog increased
+│
+▼
+Processing deadline at risk
+│
+▼
+BUSINESS INCIDENT
+
+So instead of showing executives five alerts, you show:
+
+🔴 Cash-to-Carrier at risk for Lakeshore
+
+That's business observability.
+
+Part 10: Add a technical issue but its not relevant to the business issue where we are facing,
+
+This makes the demo much stronger.
+
+Generate another signal:
+
+Plain Text
+Reporting Server
+CPU = High
+Technical severity = Critical
+
+But that server has no meaningful dependency on today's Cash-to-Carrier problem.
+
+Therefore:
+
+Plain Text
+Technical Severity CRITICAL
+ 
+Business Impact LOW
+ 
+Business Priority LOW
+
+Meanwhile:
+
+Plain Text
+Payment File Failure
+ 
+Technical Severity MEDIUM
+ 
+Business Impact HIGH
+ 
+Business Priority HIGH
+
+
+"This is why our portal ranks business problems rather than simply displaying technical alarms."
+
+The reference solution similarly calls for business-impact prioritisation rather than relying on technical severity alone.
+
+Part 11: Where AI enters
+
+This is important:
+
+Don't ask AI to invent the incident.
+
+Your backend already knows:
+
+Plain Text
+Agency
+Journey
+Failed step
+Evidence
+Dependencies
+Deadline status
+Calculated impact
+
+The AI's job is:
+
+Explain this intelligently.
+
+Architecture:
+
+Plain Text
+DATABASE
+│
+▼
+DETERMINISTIC ANALYSIS
+│
+├─ Risk
+├─ Impact
+├─ Evidence
+├─ Dependencies
+└─ Recommended action candidates
+│
+▼
+AI AGENT
+│
+┌────────┼─────────┐
+▼ ▼ ▼
+Explain Adapt Recommend
+│
+PERSONA
+
+This is far more defensible than letting an LLM calculate everything.
+
+Part 12: What the Copilot says
+
+Executive enters:
+
+What should I be worried about right now?
+
+The Copilot could respond:
+
+Lakeshore's Cash-to-Carrier journey requires attention.
+
+An incoming payment file failed the expected format check. Payment matching has subsequently deteriorated and the cash-application backlog is increasing.
+
+Business risk: The current processing cycle may miss its expected deadline.
+
+Probable cause: Incoming file structure differs from the expected structure.
+
+Recommended action: Review the changed field mapping, correct the mapping and reprocess the affected file.
+
+Confidence: High
+
+Evidence: file-validation failure, reduced matching rate and increased processing backlog.
+
+The challenge specifically calls for evidence-backed probable cause, business impact, confidence, persona-specific explanation and recommended actions.
+
+Part 13: Show persona-based explanation
+
+You don't need multiple AI agents.
+
+Use one evidence base with different presentation instructions.
+
+CFO asks:
+
+What's the business risk?
+
+Copilot focuses on:
+
+Plain Text
+Financial exposure
+Cash awaiting application
+Deadline risk
+Potential downstream impact
+CIO asks:
+
+What failed?
+
+Copilot focuses on:
+
+Plain Text
+File schema change
+Field mapping
+Integration
+Dependencies
+Affected application
+Operations asks:
+
+What do I need to do?
+
+Copilot focuses on:
+
+Plain Text
+1. Validate file
+2. Correct mapping
+3. Reprocess
+4. Verify cash application
+M&A leader asks:
+
+Is Lakeshore fully ready?
+
+Copilot focuses on:
+
+Plain Text
+Readiness
+Missing controls
+Integration dependencies
+Outstanding observability gaps
+
+The original challenge asks for multiple personas while grounding them in the same evidence model.
+
+Part 14: Human approval
+
+This is another important concept for your team.
+
+The AI recommends:
+
+Plain Text
+RECOMMENDED ACTION
+─────────────────────────
+ 
+1. Validate updated field mapping
+2. Correct mapping
+3. Reprocess affected file
+4. Verify resulting reconciliation
+ 
+Confidence: HIGH
+ 
+Evidence:
+✓ Format validation failure
+✓ Matching-rate degradation
+✓ Backlog increase
+ 
+[ VIEW EVIDENCE ]
+ 
+[ APPROVE ] [ REJECT ]
+
+Nothing material should happen merely because the AI says so.
+
+The challenge explicitly calls for human approval before material actions involving clients, money, fiduciary funds, payments or the general ledger.
+
+Part 15: Complete the story with recovery
+
+Click:
+
+APPROVE
+
+The synthetic simulator changes the state:
+
+Plain Text
+Mapping Updated
+↓
+File Reprocessed
+↓
+Matching Recovered
+↓
+Backlog Reducing
+↓
+Processing Back On Track
+↓
+CASH-TO-CARRIER
+🟢
+
+Your dashboard changes:
+
+Plain Text
+BEFORE
+ 
+Cash-to-Carrier 🔴 At Risk
+ 
+ 
+AFTER
+ 
+Cash-to-Carrier 🟢 Healthy
+
+And importantly:
+
+Plain Text
+AUDIT TRAIL
+ 
+18:02 Issue detected
+18:04 Signals correlated
+18:05 Recommendation generated
+18:07 Human approval
+18:08 Synthetic remediation initiated
+18:10 Journey recovered
+
+Those timestamps are suggested demo data, not source facts.
+
+The challenge requires recovery progress, accountable action/approval and a decision trail

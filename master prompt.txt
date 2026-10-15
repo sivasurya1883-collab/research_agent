@@ -1,0 +1,38 @@
+# MASTER PROMPT: Meridian GraphRAG Agentic Research System
+
+**Role:** You are an elite AI Solutions Architect and Full-Stack Developer. Your task is to build an end-to-end (E2E) Agentic Research System for the fictional "Meridian" investment group.
+
+**Core Objective:** Build a system where a Meridian analyst can input a single-sentence investment thesis, and an autonomous AI agent gathers external financial data, compares the uploaded company data against pre-existing database records for insights, updates a Knowledge Graph, and outputs a structured investment memo (Thesis, Risks, Bull Case, Bear Case, Recommendation) in minutes.
+
+**Tech Stack:**
+*   **Agent Orchestration:** Google Antigravity SDK (Python) using the `antigravity-preview-09-2026` model.
+*   **Backend:** FastAPI (Python).
+*   **Database (Context & Auth):** Supabase (PostgreSQL).
+*   **Knowledge Graph:** Neo4j (AuraDB).
+*   **Frontend:** React with Tailwind CSS (or similar utility framework).
+
+**UI/UX Design Requirements (Strict):**
+*   **Bento Grid Layout:** The dashboard must be structured using a responsive Bento Grid. The input interface, live agent progress tracker, comparative data insights, and final memo output should each occupy distinct, modular cards within the grid hierarchy.
+*   **Glassmorphism Styling:** Apply a frosted-glass aesthetic across the UI components. The Bento Grid cards must feature translucent backgrounds (e.g., `rgba(255, 255, 255, 0.1)`), background blur (`backdrop-filter: blur(10px)`), subtle white borders, and soft drop shadows over a deep, sophisticated gradient background fitting for a modern financial institution. 
+*   **Branding:** Prominently feature the fictional "Meridian" branding/logos. 
+
+**External Data Integrations (Tools to Build):**
+1.  **SEC Filings:** Integrate with SEC EDGAR APIs or `sec-api.io` for extracting risk factors.
+2.  **Earnings Transcripts & Company Profiles:** Integrate with Financial Modeling Prep (FMP) API.
+3.  **Peer Data & News:** Integrate with Finnhub or Financial Datasets API for competitor benchmarks.
+
+**System Workflow to Implement:**
+1.  **Authentication:** Implement a zero-trust login endpoint where the Antigravity agent authenticates to the Meridian network using `agent_login` before executing tasks.
+2.  **Context Injection & Data Comparison:** When the React UI submits a thesis and target company files, FastAPI queries Supabase to fetch existing fund holdings. The agent must execute queries to directly compare the uploaded company data against the pre-existing database records to identify anomalies and insights.
+3.  **Autonomous Gathering:** Equip the agent with Python functions to query the SEC, FMP, and Finnhub APIs based on the entities identified.
+4.  **GraphRAG Ingestion:** Write an agent tool that takes the compared data insights, and generates Cypher queries to update the Neo4j graph (Nodes: `Company`, `Document`, `Risk_Factor`; Edges: `PEER_OF`, `MENTIONS_RISK`).
+5.  **Memo Generation:** Command the Antigravity agent to query the newly updated Neo4j graph and format the final synthesized markdown memo to be displayed in the designated Bento card.
+
+**Deliverables Required:**
+1.  `docker-compose.yml` for local Neo4j and Supabase setup.
+2.  `main.py` containing the FastAPI backend and Antigravity SDK agent orchestration loop.
+3.  `tools.py` containing the API integrations and data comparison logic.
+4.  `App.jsx` + `styles.css` containing the React frontend utilizing the Bento Grid and Glassmorphism specifications.
+5.  A test suite using `pytest`.
+
+Execute the code generation step-by-step, starting with the React Glassmorphism/Bento Grid layout components.

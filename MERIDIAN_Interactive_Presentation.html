@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MERIDIAN — Interactive Business Overview</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f6f7fb;--ink:#0f172a;--muted:#64748b;--line:#e3e8f0;--card:#fff;
+  --blue:#2563eb;--violet:#7c3aed;--amber:#f59e0b;--teal:#0d9488;--pink:#db2777;--green:#059669;--red:#dc2626;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overflow:hidden}
+button{font-family:inherit}
+
+/* ---------- slides ---------- */
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:44px 7vw 92px;opacity:0;pointer-events:none;transform:translateY(16px);transition:opacity .45s ease,transform .45s ease;overflow:hidden}
+.slide.active{opacity:1;pointer-events:all;transform:none}
+.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.28;pointer-events:none}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:12px;position:relative}
+.eyebrow::before{content:'';width:22px;height:3px;border-radius:3px;background:currentColor}
+h1{font-size:clamp(52px,8vw,104px);font-weight:900;letter-spacing:-.04em;line-height:.98}
+h2{font-size:clamp(26px,3.2vw,42px);font-weight:800;letter-spacing:-.02em;line-height:1.12;position:relative}
+.grad{background:linear-gradient(110deg,#60a5fa,#a78bfa 50%,#2dd4bf);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.lead{font-size:clamp(15px,1.5vw,19px);line-height:1.6;max-width:58ch;margin-top:18px;position:relative}
+
+/* ---------- slide 1 ---------- */
+#s1{background:linear-gradient(135deg,#1e1b4b 0%,#312e81 45%,#115e59 100%);color:#fff}
+#s1 .eyebrow{color:#a5b4fc}
+#s1 .lead{color:#c7d2fe}
+#s1 .blob.a{width:520px;height:520px;background:#6366f1;top:-160px;right:-120px}
+#s1 .blob.b{width:420px;height:420px;background:#14b8a6;bottom:-140px;left:-100px}
+.team{display:flex;gap:12px;flex-wrap:wrap;margin-top:36px;position:relative}
+.agent-chip{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);font-size:14px;font-weight:600;backdrop-filter:blur(8px);animation:glow 5s infinite}
+.agent-chip i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.agent-chip:nth-child(1){animation-delay:0s}.agent-chip:nth-child(2){animation-delay:1s}.agent-chip:nth-child(3){animation-delay:2s}.agent-chip:nth-child(4){animation-delay:3s}.agent-chip:nth-child(5){animation-delay:4s}
+@keyframes glow{0%,20%,100%{background:rgba(255,255,255,.08);transform:none}8%{background:rgba(255,255,255,.22);transform:translateY(-4px);box-shadow:0 10px 30px rgba(0,0,0,.25)}}
+.start{margin-top:34px;align-self:flex-start;border:none;cursor:pointer;padding:14px 26px;border-radius:100px;font-size:15px;font-weight:700;color:#1e1b4b;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.25);transition:transform .2s;position:relative}
+.start:hover{transform:translateY(-2px) scale(1.03)}
+
+/* ---------- slide 2 ---------- */
+#s2 .blob.a{width:420px;height:420px;background:var(--red);top:-160px;left:-120px;transition:background .6s}
+#s2 .blob.b{width:420px;height:420px;background:var(--blue);bottom:-160px;right:-100px}
+#s2.good .blob.a{background:var(--green)}
+.toggle{display:inline-flex;background:#e9edf5;border-radius:100px;padding:5px;margin-top:22px;position:relative;align-self:flex-start}
+.toggle button{border:none;background:none;padding:10px 24px;border-radius:100px;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .3s;position:relative;z-index:1}
+.toggle button.on{color:#fff}
+.toggle .pill{position:absolute;top:5px;bottom:5px;left:5px;width:calc(50% - 5px);border-radius:100px;background:var(--red);transition:all .4s cubic-bezier(.6,.1,.2,1)}
+#s2.good .toggle .pill{left:50%;background:var(--green)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:30px;position:relative}
+.metric{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:30px 28px;border-top:5px solid var(--red);transition:border-color .5s,transform .3s,box-shadow .3s}
+.metric:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(15,23,42,.08)}
+#s2.good .metric{border-top-color:var(--green)}
+.metric .ico{font-size:30px;margin-bottom:14px}
+.metric .big{font-size:clamp(38px,4.6vw,62px);font-weight:900;letter-spacing:-.03em;line-height:1;color:var(--red);transition:color .5s,opacity .25s,transform .25s}
+#s2.good .metric .big{color:var(--green)}
+.metric .lbl{font-size:15px;color:var(--muted);margin-top:10px;line-height:1.45;transition:opacity .25s}
+.swap{opacity:0;transform:translateY(8px)}
+.save-note{margin-top:22px;font-size:15px;color:var(--muted);position:relative;min-height:22px}
+.save-note b{color:var(--ink)}
+
+/* ---------- slide 3 ---------- */
+#s3 .blob.a{width:420px;height:420px;background:var(--violet);top:-170px;right:10%}
+#s3 .blob.b{width:380px;height:380px;background:var(--teal);bottom:-170px;left:5%}
+.head-row{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;position:relative}
+.run{border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 22px;border-radius:100px;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(110deg,var(--blue),var(--violet));box-shadow:0 8px 24px rgba(79,70,229,.35);transition:transform .2s;white-space:nowrap}
+.run:hover{transform:translateY(-2px)}
+.col-heads{display:grid;grid-template-columns:1.15fr 1.05fr .8fr .7fr;column-gap:46px;margin:22px 0 8px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);position:relative}
+.flow{display:grid;grid-template-columns:1.15fr 1.05fr .8fr .7fr;grid-template-rows:repeat(4,minmax(58px,1fr));gap:10px 46px;position:relative;height:clamp(250px,40vh,340px)}
+.node{position:relative;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:10px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .3s;font-size:14px;font-weight:700;border-left:6px solid var(--c)}
+.node small{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-top:2px;line-height:1.3}
+.node .em{font-size:22px;flex-shrink:0}
+.node:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(15,23,42,.1)}
+.node.src::after,.node.ag::after,.node.st::after{content:'';position:absolute;right:-46px;top:50%;width:46px;height:3px;background:linear-gradient(90deg,var(--c),rgba(148,163,184,.4));transform:translateY(-50%);border-radius:3px}
+.node.src::before,.node.ag::before,.node.st::before{content:'';position:absolute;right:-48px;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:var(--c);animation:travel 2.2s linear infinite}
+@keyframes travel{0%{transform:translateX(-46px);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(0);opacity:0}}
+.node.dim{opacity:.28;filter:grayscale(.7)}
+.node.hot{background:color-mix(in srgb,var(--c) 10%,#fff);border-color:var(--c);box-shadow:0 14px 34px color-mix(in srgb,var(--c) 30%,transparent);transform:translateY(-3px) scale(1.02)}
+.local{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;background:#dbeafe;color:#1d4ed8}
+.live{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;background:#f1f5f9;color:#475569}
+#sec{--c:var(--blue);grid-row:1}#tr{--c:var(--violet);grid-row:2}#peer{--c:var(--amber);grid-row:3}#news{--c:var(--teal);grid-row:4}
+#ag-f{--c:var(--blue);grid-row:1;grid-column:2}#ag-s{--c:var(--violet);grid-row:2;grid-column:2}#ag-p{--c:var(--amber);grid-row:3/5;grid-column:2}
+#strat{--c:var(--pink);grid-row:1/5;grid-column:3;flex-direction:column;justify-content:center;text-align:center}
+#memo{--c:var(--green);grid-row:1/5;grid-column:4;flex-direction:column;justify-content:center;text-align:center}
+#memo::after,#memo::before{display:none}
+.node.big-n .em{font-size:30px}
+.detail{margin-top:16px;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--blue);border-radius:16px;padding:16px 22px;position:relative;min-height:84px;transition:border-color .3s;display:flex;gap:26px;align-items:center}
+.detail h4{font-size:16px;font-weight:800;margin-bottom:4px}
+.detail p{font-size:14px;color:var(--muted);line-height:1.5}
+.detail .tags{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;max-width:300px;justify-content:flex-end}
+.tag{padding:5px 11px;border-radius:100px;font-size:12px;font-weight:600;background:var(--bg);border:1px solid var(--line)}
+.prog{position:absolute;left:0;bottom:0;height:4px;border-radius:0 4px 4px 0;background:linear-gradient(90deg,var(--blue),var(--violet),var(--pink),var(--green));width:0;transition:width .6s ease}
+
+/* ---------- slide 4 ---------- */
+#s4 .blob.a{width:420px;height:420px;background:var(--green);top:-170px;left:-100px}
+#s4 .blob.b{width:420px;height:420px;background:var(--pink);bottom:-190px;right:-100px}
+.proof{display:grid;grid-template-columns:.9fr 1.1fr;gap:20px;margin-top:22px;position:relative}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px 26px}
+.gauge-card{display:flex;align-items:center;gap:24px}
+.gauge{position:relative;width:132px;height:132px;flex-shrink:0}
+.gauge svg{width:100%;height:100%;transform:rotate(-90deg)}
+.gauge .v{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:var(--green)}
+.gauge .v small{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.08em}
+.gauge-card h3{font-size:24px;font-weight:900;color:var(--green)}
+.gauge-card p{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.5}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tabs button{flex:1;border:2px solid var(--line);background:#fff;border-radius:14px;padding:10px 6px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .25s}
+.tabs button.on[data-s=bear]{border-color:var(--red);color:var(--red);background:#fef2f2}
+.tabs button.on[data-s=base]{border-color:var(--blue);color:var(--blue);background:#eff6ff}
+.tabs button.on[data-s=bull]{border-color:var(--green);color:var(--green);background:#ecfdf5}
+.pt{display:flex;align-items:baseline;gap:14px}
+.pt .price{font-size:44px;font-weight:900;letter-spacing:-.03em;transition:color .3s}
+.pt .chg{font-size:18px;font-weight:800}
+.pt-note{font-size:13px;color:var(--muted);margin-top:4px;min-height:18px}
+.track{position:relative;height:10px;border-radius:10px;background:linear-gradient(90deg,#fecaca,#fde68a 50%,#a7f3d0);margin-top:16px}
+.track .now{position:absolute;top:-5px;width:2px;height:20px;background:var(--ink);left:0}
+.track .now::after{content:'Today $104.50';position:absolute;top:22px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;white-space:nowrap;color:var(--ink)}
+.track .mark{position:absolute;top:-6px;width:22px;height:22px;border-radius:50%;background:var(--c,var(--blue));border:4px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.25);transform:translateX(-50%);transition:left .6s cubic-bezier(.5,.1,.2,1),background .3s}
+.rules{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px;position:relative}
+.rule{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px;transition:transform .3s,box-shadow .3s;cursor:default}
+.rule:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(15,23,42,.08)}
+.rule .top{display:flex;justify-content:space-between;align-items:center}
+.rule .v{font-size:26px;font-weight:900;color:var(--rc)}
+.rule .ok{width:22px;height:22px;border-radius:50%;background:var(--green);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
+.rule .t{font-size:12px;color:var(--muted);margin-top:2px}
+.bar{position:relative;height:8px;border-radius:8px;background:#eef1f6;margin-top:12px}
+.bar i{display:block;height:100%;border-radius:8px;background:var(--rc);width:0;transition:width 1.1s cubic-bezier(.3,.1,.2,1)}
+.bar b{position:absolute;top:-4px;width:2px;height:16px;background:var(--ink);border-radius:2px}
+.bar-l{font-size:10px;color:var(--muted);margin-top:8px}
+.next{display:flex;gap:12px;margin-top:20px;position:relative}
+.next div{flex:1;display:flex;align-items:center;gap:12px;background:linear-gradient(110deg,#eef2ff,#ecfeff);border:1px solid var(--line);border-radius:16px;padding:12px 16px;font-size:13px;color:var(--muted);transition:transform .25s}
+.next div:hover{transform:translateY(-3px)}
+.next i{font-style:normal;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.next b{color:var(--ink);display:block;font-size:14px}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.92);border:1px solid var(--line);padding:8px 16px;border-radius:100px;box-shadow:0 6px 24px rgba(15,23,42,.1);z-index:20;backdrop-filter:blur(10px)}
+.nav button{border:none;background:none;font-size:18px;cursor:pointer;color:var(--muted);padding:2px 9px;border-radius:8px}
+.nav button:hover{background:#eef2ff;color:var(--blue)}
+.dots{display:flex;gap:7px}
+.dot{width:8px;height:8px;border-radius:50%;background:#cbd5e1;cursor:pointer;transition:all .25s}
+.dot.on{background:var(--blue);width:24px;border-radius:6px}
+
+@media(max-width:900px){
+  .slide{overflow:auto;justify-content:flex-start;padding-top:28px}
+  .metrics,.proof,.rules,.next{grid-template-columns:1fr;display:grid}
+  .col-heads{display:none}
+  .flow{display:flex;flex-direction:column;height:auto}
+  .node.src::after,.node.ag::after,.node.st::after,.node::before{display:none}
+  .detail{flex-direction:column;align-items:flex-start}.detail .tags{margin-left:0;justify-content:flex-start}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ 1 · COVER ============ -->
+<section class="slide active" id="s1">
+  <div class="blob a"></div><div class="blob b"></div>
+  <div class="eyebrow">TCS GenAI Lab · 2026</div>
+  <h1><span class="grad">MERIDIAN</span></h1>
+  <p class="lead">An AI research team that checks any equity investment idea against audited filings, management sentiment, peer valuations and market news — and delivers a decision-ready memo in about two minutes.</p>
+  <div class="team">
+    <div class="agent-chip" style="--c:#60a5fa"><i></i>Filings Specialist</div>
+    <div class="agent-chip" style="--c:#a78bfa"><i></i>Sentiment Specialist</div>
+    <div class="agent-chip" style="--c:#fbbf24"><i></i>Peer &amp; News Specialist</div>
+    <div class="agent-chip" style="--c:#f472b6"><i></i>Strategy Specialist</div>
+    <div class="agent-chip" style="--c:#34d399"><i></i>Memo Writer</div>
+  </div>
+  <button class="start" onclick="go(1)">See why it matters →</button>
+</section>
+
+<!-- ============ 2 · WHY ============ -->
+<section class="slide" id="s2">
+  <div class="blob a"></div><div class="blob b"></div>
+  <div class="eyebrow">Why it matters</div>
+  <h2>Research that used to take days, now in minutes</h2>
+  <div class="toggle" id="tg">
+    <div class="pill"></div>
+    <button class="on" id="b-today" onclick="setMode(false)">Today</button>
+    <button id="b-mer" onclick="setMode(true)">With MERIDIAN</button>
+  </div>
+  <div class="metrics">
+    <div class="metric"><div class="ico">⏳</div><div class="big" data-k="0">3–5 days</div><div class="lbl" data-l="0">to produce one research memo by hand</div></div>
+    <div class="metric"><div class="ico">🗂️</div><div class="big" data-k="1">6+ sources</div><div class="lbl" data-l="1">analysts must piece together manually</div></div>
+    <div class="metric"><div class="ico">⚠️</div><div class="big" data-k="2">~30%</div><div class="lbl" data-l="2">of mandate breaches missed by manual checks</div></div>
+  </div>
+  <div class="save-note" id="note">Tap <b>With MERIDIAN</b> to see the difference.</div>
+</section>
+
+<!-- ============ 3 · AGENT MAP ============ -->
+<section class="slide" id="s3">
+  <div class="blob a"></div><div class="blob b"></div>
+  <div class="head-row">
+    <div>
+      <div class="eyebrow">How it works</div>
+      <h2>Where every answer comes from</h2>
+    </div>
+    <button class="run" onclick="runDemo()" id="runbtn">▶ Run a live analysis</button>
+  </div>
+  <div class="col-heads"><span>Data sources</span><span>AI specialists</span><span>Mandate check</span><span>Result</span></div>
+  <div class="flow">
+    <div class="node src" id="sec" onclick="pick('sec')"><span class="em">🏛️</span><div>SEC Filings<small>Audited financials</small><span class="local">📍 Stored locally on firm machines</span></div></div>
+    <div class="node src" id="tr" onclick="pick('tr')"><span class="em">🎙️</span><div>Earnings Call Transcripts<small>What management said</small><span class="live">🌐 Public sources</span></div></div>
+    <div class="node src" id="peer" onclick="pick('peer')"><span class="em">📊</span><div>Peer Valuation Data<small>How rivals are priced</small><span class="live">🌐 Market data</span></div></div>
+    <div class="node src" id="news" onclick="pick('news')"><span class="em">📰</span><div>Market News<small>Latest sector developments</small><span class="live">🌐 Live search</span></div></div>
+
+    <div class="node ag" id="ag-f" onclick="pick('f')"><span class="em">🤖</span><div>Filings Specialist<small>Revenue, debt, cash flow</small></div></div>
+    <div class="node ag" id="ag-s" onclick="pick('s')"><span class="em">🤖</span><div>Sentiment Specialist<small>Tone &amp; confidence</small></div></div>
+    <div class="node ag" id="ag-p" onclick="pick('p')"><span class="em">🤖</span><div>Peer &amp; News Specialist<small>Valuation vs rivals, market signals</small></div></div>
+
+    <div class="node st big-n" id="strat" onclick="pick('strat')"><span class="em">🧭</span><div>Strategy Specialist<small>Scores fit against the Meridian mandate</small></div></div>
+    <div class="node big-n" id="memo" onclick="pick('memo')"><span class="em">📄</span><div>Investment Memo<small>Verdict, bull &amp; bear, PDF</small></div></div>
+  </div>
+  <div class="detail" id="detail">
+    <div><h4>Click any card, or press “Run a live analysis”</h4><p>Follow the path from each data source, through its AI specialist, to the final recommendation.</p></div>
+    <div class="prog" id="prog"></div>
+  </div>
+</section>
+
+<!-- ============ 4 · PROOF ============ -->
+<section class="slide" id="s4">
+  <div class="blob a"></div><div class="blob b"></div>
+  <div class="eyebrow">Proof &amp; next steps</div>
+  <h2>Example: Black &amp; White</h2>
+  <div class="proof">
+    <div class="card gauge-card">
+      <div class="gauge">
+        <svg viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="#e8edf4" stroke-width="12"/>
+          <circle id="ring" cx="60" cy="60" r="52" fill="none" stroke="url(#gg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7" style="transition:stroke-dashoffset 1.4s cubic-bezier(.3,.1,.2,1)"/>
+          <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#0d9488"/></linearGradient></defs>
+        </svg>
+        <div class="v"><span id="scoreN">0%</span><small>MANDATE FIT</small></div>
+      </div>
+      <div>
+        <h3>STRONG BUY</h3>
+        <p>Passes all four mandate rules. Backed by audited filings, positive management tone and strong peer standing.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tabs" id="tabs">
+        <button data-s="bear" onclick="scen('bear')">🐻 Bear case</button>
+        <button data-s="base" class="on" onclick="scen('base')">🎯 Price target</button>
+        <button data-s="bull" onclick="scen('bull')">🐂 Bull case</button>
+      </div>
+      <div class="pt"><span class="price" id="price">$124.00</span><span class="chg" id="chg">+18.7%</span></div>
+      <div class="pt-note" id="ptnote">Meridian base-case target vs $104.50 today</div>
+      <div class="track"><div class="now" id="now"></div><div class="mark" id="mark"></div></div>
+      <div style="height:22px"></div>
+    </div>
+  </div>
+  <div class="rules" id="rules">
+    <div class="rule" style="--rc:#2563eb"><div class="top"><div class="v">4.85%</div><div class="ok">✓</div></div><div class="t">Free cash flow yield</div><div class="bar"><i data-w="80.8"></i><b style="left:66.7%"></b></div><div class="bar-l">Floor 4.0%</div></div>
+    <div class="rule" style="--rc:#7c3aed"><div class="top"><div class="v">2.20×</div><div class="ok">✓</div></div><div class="t">Debt / EBITDA</div><div class="bar"><i data-w="55"></i><b style="left:62.5%"></b></div><div class="bar-l">Ceiling 2.5× (lower is better)</div></div>
+    <div class="rule" style="--rc:#d97706"><div class="top"><div class="v">9.8%</div><div class="ok">✓</div></div><div class="t">Organic growth</div><div class="bar"><i data-w="81.7"></i><b style="left:58.3%"></b></div><div class="bar-l">Target above 7%</div></div>
+    <div class="rule" style="--rc:#0d9488"><div class="top"><div class="v">33.5%</div><div class="ok">✓</div></div><div class="t">EBITDAC margin</div><div class="bar"><i data-w="83.8"></i><b style="left:67.5%"></b></div><div class="bar-l">Target above 27%</div></div>
+  </div>
+  <div class="next">
+    <div><i>1</i><span><b>Instant preview</b>Open in any browser, no install</span></div>
+    <div><i>2</i><span><b>Guided pilot</b>Run on your own watchlist</span></div>
+    <div><i>3</i><span><b>Team rollout</b>Full dashboard for analysts</span></div>
+  </div>
+</section>
+
+<div class="nav">
+  <button onclick="go(-1)" aria-label="Previous">←</button>
+  <div class="dots" id="dots"></div>
+  <button onclick="go(1)" aria-label="Next">→</button>
+</div>
+
+<script>
+/* ---------- navigation ---------- */
+const slides=[...document.querySelectorAll('.slide')],dotBox=document.getElementById('dots');let cur=0;
+slides.forEach((_,i)=>{const d=document.createElement('div');d.className='dot'+(i?'':' on');d.onclick=()=>goTo(i);dotBox.appendChild(d)});
+function goTo(n){
+  slides[cur].classList.remove('active');cur=(n+slides.length)%slides.length;slides[cur].classList.add('active');
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i===cur));
+  if(cur===1)setMode(false,true);
+  if(cur===2){resetMap()}
+  if(cur===3)playProof();
+}
+function go(k){goTo(cur+k)}
+document.addEventListener('keydown',e=>{
+  if(['ArrowRight','ArrowDown'].includes(e.key))go(1);
+  if(['ArrowLeft','ArrowUp'].includes(e.key))go(-1);
+});
+
+/* ---------- slide 2 : before / after ---------- */
+const before=[['3–5 days','to produce one research memo by hand'],['6+ sources','analysts must piece together manually'],['~30%','of mandate breaches missed by manual checks']];
+const after=[['~2 min','to a complete, sourced memo'],['1 view','filings, sentiment, peers and news together'],['100%','of mandate rules checked and logged']];
+function setMode(good,silent){
+  const s=document.getElementById('s2');s.classList.toggle('good',good);
+  document.getElementById('b-today').classList.toggle('on',!good);
+  document.getElementById('b-mer').classList.toggle('on',good);
+  const data=good?after:before;
+  document.querySelectorAll('.metric').forEach((m,i)=>{
+    const b=m.querySelector('.big'),l=m.querySelector('.lbl');
+    b.classList.add('swap');l.classList.add('swap');
+    setTimeout(()=>{b.textContent=data[i][0];l.textContent=data[i][1];b.classList.remove('swap');l.classList.remove('swap')},silent?0:220);
+  });
+  document.getElementById('note').innerHTML=good
+    ?'Analysts now spend their time on <b>judgment and decisions</b>, not on collecting data.'
+    :'Tap <b>With MERIDIAN</b> to see the difference.';
+}
+
+/* ---------- slide 3 : agent map ---------- */
+const chains={
+  sec:['sec','ag-f'],f:['sec','ag-f'],
+  tr:['tr','ag-s'],s:['tr','ag-s'],
+  peer:['peer','ag-p'],news:['news','ag-p'],p:['peer','news','ag-p'],
+  strat:['sec','tr','peer','news','ag-f','ag-s','ag-p','strat'],
+  memo:['sec','tr','peer','news','ag-f','ag-s','ag-p','strat','memo']
+};
+const colors={sec:'#2563eb',f:'#2563eb',tr:'#7c3aed',s:'#7c3aed',peer:'#d97706',news:'#0d9488',p:'#d97706',strat:'#db2777',memo:'#059669'};
+const info={
+  sec:['SEC Filings — stored locally','Audited filings and quarterly financial data are kept on the firm\u2019s own machines, so core numbers load instantly and don\u2019t depend on the internet.',['Revenue','EBITDA','Debt','Free cash flow']],
+  f:['Filings Specialist','Reads the locally stored SEC filings and pulls out the audited numbers that decide whether a company meets the mandate.',['Revenue & margins','Debt/EBITDA','FCF yield','Filing reference']],
+  tr:['Earnings Call Transcripts','Transcripts of what management told investors, gathered from public sources.',['Executive tone','Renewal rates','Margin guidance','Analyst Q&A']],
+  s:['Sentiment Specialist','Reads the transcripts and scores how confident management sounds, flagging caution or skepticism early.',['Sentiment 0–100','Confident / Cautious','Risk flags']],
+  peer:['Peer Valuation Data','Valuation multiples and margins for comparable brokers, so a company is judged against its real competitors.',['P/E & EV/EBITDA','Operating margin','Leverage vs rivals']],
+  news:['Market News','Fresh sector news: pricing trends, acquisitions and ownership changes among brokerage rivals.',['Pricing signals','Deal activity','Ownership changes']],
+  p:['Peer & News Specialist','Combines peer valuations with the latest market news to show how the company stacks up today.',['Peer ranking','News digest','Sector signals']],
+  strat:['Strategy Specialist','Brings all findings together and scores the idea against the Meridian mandate: cash flow, debt, growth and margins.',['Score 0–100%','Strong Buy / Hold / Pass','Strategic fit']],
+  memo:['Investment Memo','A clear recommendation with bull and bear cases, price targets and position sizing, ready for committee and exportable to PDF.',['Verdict','Bull & bear','Price targets','PDF export']]
+};
+let timer=null;
+function clearHot(){document.querySelectorAll('.flow .node').forEach(n=>n.classList.remove('hot','dim'))}
+function show(key){
+  const ids=chains[key];
+  document.querySelectorAll('.flow .node').forEach(n=>{
+    const on=ids.includes(n.id)||(key==='memo'||key==='strat')&&ids.includes(n.id);
+    n.classList.toggle('hot',on);n.classList.toggle('dim',!on);
+  });
+  const [t,p,tags]=info[key],d=document.getElementById('detail');
+  d.style.borderLeftColor=colors[key];
+  d.firstElementChild.innerHTML=`<h4>${t}</h4><p>${p}</p>`;
+  let tg=d.querySelector('.tags');if(!tg){tg=document.createElement('div');tg.className='tags';d.insertBefore(tg,document.getElementById('prog'))}
+  tg.innerHTML=tags.map(x=>`<span class="tag">${x}</span>`).join('');
+}
+function pick(key){stopDemo();show(key)}
+function resetMap(){stopDemo();clearHot();document.getElementById('prog').style.width='0';
+  const d=document.getElementById('detail');d.style.borderLeftColor='#2563eb';
+  d.firstElementChild.innerHTML='<h4>Click any card, or press \u201cRun a live analysis\u201d</h4><p>Follow the path from each data source, through its AI specialist, to the final recommendation.</p>';
+  const tg=d.querySelector('.tags');if(tg)tg.remove();
+  document.getElementById('runbtn').textContent='\u25B6 Run a live analysis';}
+function stopDemo(){if(timer){clearInterval(timer);timer=null;document.getElementById('runbtn').textContent='\u25B6 Run a live analysis'}}
+function runDemo(){
+  if(timer){stopDemo();return}
+  const seq=['sec','tr','peer','news','strat','memo'];let i=0;
+  document.getElementById('runbtn').textContent='\u23F9 Stop';
+  const step=()=>{
+    show(seq[i]);
+    document.getElementById('prog').style.width=((i+1)/seq.length*100)+'%';
+    i++;
+    if(i>=seq.length){clearInterval(timer);timer=null;document.getElementById('runbtn').textContent='\u21BB Run again'}
+  };
+  document.getElementById('prog').style.width='0';step();timer=setInterval(step,2200);
+}
+
+/* ---------- slide 4 : proof ---------- */
+const sc={bear:{p:88.83,n:'Bear case (35% likely): pricing cools, talent costs rise',c:'#dc2626'},base:{p:124,n:'Meridian base-case target vs $104.50 today',c:'#2563eb'},bull:{p:142.6,n:'Bull case (65% likely): pricing and bolt-on deals drive growth',c:'#059669'}};
+const lo=80,hi=150,now=104.5;
+function pos(v){return Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100))}
+function scen(k){
+  const s=sc[k],chg=(s.p/now-1)*100;
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.s===k));
+  const pr=document.getElementById('price'),ch=document.getElementById('chg');
+  pr.textContent='$'+s.p.toFixed(2);pr.style.color=s.c;
+  ch.textContent=(chg>=0?'+':'')+chg.toFixed(1)+'%';ch.style.color=chg>=0?'#059669':'#dc2626';
+  document.getElementById('ptnote').textContent=s.n;
+  const m=document.getElementById('mark');m.style.left=pos(s.p)+'%';m.style.setProperty('--c',s.c);
+}
+function playProof(){
+  document.getElementById('now').style.left=pos(now)+'%';
+  scen('base');
+  const ring=document.getElementById('ring'),sn=document.getElementById('scoreN');
+  ring.style.transition='none';ring.style.strokeDashoffset='326.7';sn.textContent='0%';
+  document.querySelectorAll('.bar i').forEach(i=>{i.style.transition='none';i.style.width='0'});
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    ring.style.transition='stroke-dashoffset 1.4s cubic-bezier(.3,.1,.2,1)';ring.style.strokeDashoffset=326.7*(1-.95);
+    document.querySelectorAll('.bar i').forEach(i=>{i.style.transition='width 1.1s cubic-bezier(.3,.1,.2,1)';i.style.width=i.dataset.w+'%'});
+    let v=0;const t=setInterval(()=>{v+=3;if(v>=95){v=95;clearInterval(t)}sn.textContent=v+'%'},30);
+  }));
+}
+</script>
+</body>
+</html>
